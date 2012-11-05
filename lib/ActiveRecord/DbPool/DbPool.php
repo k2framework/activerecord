@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -13,9 +14,9 @@
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
  * Clase que maneja el pool de conexiones
- * 
+ *
  * @category   Kumbia
- * @package    DbPool 
+ * @package    DbPool
  * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -27,8 +28,9 @@ use ActiveRecord\Config\Config;
 use ActiveRecord\Config\Parameters;
 
 /**
- * Clase que maneja el pool de conexiones
+ * \ActiveRecord\DbPool
  *
+ * Clase que maneja el pool de conexiones
  */
 class DbPool
 {
@@ -37,8 +39,14 @@ class DbPool
      * Singleton de conexiones a base de datos
      *
      * @var array
-     * */
+     */
     protected static $connections = array();
+
+    /**
+     * Attributos PDO usados en las conexiones
+     *
+     * @var array
+     */
     protected static $attributes = array();
 
     /**
@@ -47,7 +55,7 @@ class DbPool
      *
      * @param string $connection conexion a la base de datos en databases.ini
      * @param boolean $new nueva conexion
-     * @return PDO
+     * @return \PDO
      */
     public static function factory(Parameters $config)
     {
@@ -58,7 +66,7 @@ class DbPool
 
         // check for PDO extension
         if (!extension_loaded('pdo')) {
-            throw new KumbiaException('La Extension PDO es requerida por este adaptador, pero la extension no esta cargada');
+            throw new KumbiaException('La extensión PDO es requerida por este adaptador, pero la extensión no esta cargada');
         }
 
         try {
@@ -77,6 +85,11 @@ class DbPool
         }
     }
 
+    /**
+     * Establece los atributos PDO de las conexiones
+     *
+     * @param array $attributes
+     */
     public static function setAttributes(array $attributes)
     {
         self::$attributes = $attributes;

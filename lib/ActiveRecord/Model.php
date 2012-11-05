@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -13,7 +14,7 @@
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
  * Implementacion del patron de diseño ActiveRecord
- * 
+ *
  * @category   Kumbia
  * @package    ActiveRecord
  * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
@@ -46,20 +47,20 @@ class Model
 {
     /**
      * Obtener datos cargados en objeto del Modelo
-     * 
+     *
      */
 
     const FETCH_MODEL = 'model';
 
     /**
      * Obtener datos cargados en objeto
-     * 
+     *
      */
     const FETCH_OBJ = 'obj';
 
     /**
      * Obtener datos cargados en array
-     * 
+     *
      */
     const FETCH_ARRAY = 'array';
 
@@ -86,21 +87,21 @@ class Model
 
     /**
      * Objeto DbQuery para implementar chain
-     * 
+     *
      * @var Obj
      */
     protected static $dbQuery = NULL;
 
     /**
      * ResulSet PDOStatement
-     * 
+     *
      * @var \PDOStatement
      */
     protected $resultSet = NULL;
 
     /**
      * Modo de obtener datos
-     * 
+     *
      * @var integer
      */
     protected $fetchMode = self::FETCH_MODEL;
@@ -114,13 +115,14 @@ class Model
 
     /**
      *
-     * @var array 
+     * @var array
      */
     protected static $relations = array();
 
     /**
      * Constructor de la class
-     * 
+     *
+     * @param array $data
      */
     public final function __construct($data = NULL)
     {
@@ -152,7 +154,7 @@ class Model
 
     /**
      * Carga el array como atributos del objeto
-     * 
+     *
      * @param array $data
      */
     public function dump($data)
@@ -164,87 +166,87 @@ class Model
 
     protected function initialize()
     {
-        
+
     }
 
     protected function createRelations()
     {
-        
+
     }
 
     /**
      * Callback antes de crear
-     * 
+     *
      * @return boolean
      */
     protected function beforeCreate()
     {
-        
+
     }
 
     /**
      * Callback despues de crear
-     * 
+     *
      * @return boolean
      */
     protected function afterCreate()
     {
-        
+
     }
 
     /**
      * Callback antes de actualizar
-     * 
+     *
      * @return boolean
      */
     protected function beforeUpdate()
     {
-        
+
     }
 
     /**
      * Callback antes de guardar
-     * 
+     *
      * @return boolean
      */
     protected function beforeSave()
     {
-        
+
     }
 
     /**
      * Callback para realizar validaciones
-     * 
+     *
      * @return boolean
      */
     protected function validate($update = FALSE)
     {
-        
+
     }
 
     /**
      * Callback despues de actualizar
-     * 
+     *
      * @return boolean
      */
     protected function afterUpdate()
     {
-        
+
     }
 
     /**
      * Callback despues de guardar
-     * 
+     *
      * @return boolean
      */
     protected function afterSave()
     {
-        
+
     }
 
     /**
-     * Modo de obtener datos 
-     * 
+     * Modo de obtener datos
+     *
      * @param integer $mode
      * @return ActiveRecord
      */
@@ -256,7 +258,7 @@ class Model
 
     /**
      * Indica el modo de obtener datos al ResultSet actual
-     * 
+     *
      */
     protected function fetchMode($fetchMode = NULL)
     {
@@ -286,7 +288,7 @@ class Model
 
     /**
      * Asigna la tabla fuente de datos
-     * 
+     *
      * @param string $table
      */
     public static function setTable($table)
@@ -296,7 +298,7 @@ class Model
 
     /**
      * Obtiene la tabla fuente de datos
-     * 
+     *
      * @return string
      */
     public static function getTable()
@@ -314,7 +316,7 @@ class Model
 
     /**
      * Asigna el schema
-     * 
+     *
      * @param string $schema
      * @return ActiveRecord
      */
@@ -326,7 +328,7 @@ class Model
 
     /**
      * Obtiene el schema
-     * 
+     *
      * @return string
      */
     public function getSchema()
@@ -336,7 +338,7 @@ class Model
 
     /**
      * Asigna la conexion
-     * 
+     *
      * @param string $conn
      * @return ActiveRecord
      */
@@ -348,7 +350,7 @@ class Model
 
     /**
      * Obtiene la conexion
-     * 
+     *
      * @return string
      */
     public function getConnection()
@@ -358,7 +360,7 @@ class Model
 
     /**
      * Ejecuta una setencia SQL aplicando Prepared Statement
-     * 
+     *
      * @param string $sql Setencia SQL
      * @param array $params parametros que seran enlazados al SQL
      * @param string $fetchMode
@@ -387,7 +389,7 @@ class Model
 
     /**
      * Ejecuta una consulta de dbQuery
-     * 
+     *
      * @param DbQuery $dbQuery Objeto de consulta
      * @param string $fetchMode
      * @return \PDOStatement
@@ -421,7 +423,7 @@ class Model
 
     /**
      * Devuelve la instancia para realizar chain
-     * 
+     *
      * @return DbQuery
      */
     public static function createQuery()
@@ -444,7 +446,7 @@ class Model
 
     /**
      * Obtiene un array con los items resultantes de la busqueda
-     * 
+     *
      * @param string $fetchMode
      * @return array
      */
@@ -456,7 +458,7 @@ class Model
 
     /**
      * Obtiene el primer elemento de la busqueda
-     * 
+     *
      * @param string $fetchMode
      * @return ActiveRecord
      */
@@ -473,7 +475,7 @@ class Model
 
     /**
      * Busca por medio de una columna especifica
-     * 
+     *
      * @param string $column columna de busqueda
      * @param string $value valor para la busqueda
      * @param string $fetchMode
@@ -489,7 +491,7 @@ class Model
 
     /**
      * Busca por medio de una columna especifica y obtiene todas la coincidencias
-     * 
+     *
      * @param string $column columna de busqueda
      * @param string $value valor para la busqueda
      * @param string $fetchMode
@@ -515,7 +517,7 @@ class Model
 
     /**
      * Buscar por medio de la clave primaria
-     * 
+     *
      * @param string $value
      * @param string $fetchMode
      * @return Model
@@ -539,7 +541,7 @@ class Model
     /**
      * Obtiene un array de los atributos que corresponden a columnas
      * en la tabla
-     * 
+     *
      * @return array
      */
     private function getTableValues()
@@ -569,9 +571,9 @@ class Model
 
     /**
      * Realiza un insert sobre la tabla
-     * 
+     *
      * @param array $data información a ser guardada
-     * @return ActiveRecord 
+     * @return ActiveRecord
      */
     public function create($data = NULL)
     {
@@ -620,7 +622,7 @@ class Model
 
     /**
      * Realiza un update sobre la tabla
-     * 
+     *
      * @param array $data información a ser guardada
      * @return Bool
      */
@@ -633,7 +635,7 @@ class Model
 
     /**
      * Realiza un delete sobre la tabla
-     * 
+     *
      * @return Bool
      */
     public static function deleteAll()
@@ -645,7 +647,7 @@ class Model
 
     /**
      * Cuenta las apariciones de filas
-     * 
+     *
      * @param string $column
      * @return integer
      */
@@ -657,7 +659,7 @@ class Model
 
     /**
      * Verifica si existe al menos una fila con las condiciones indicadas
-     * 
+     *
      * @return boolean
      */
     public function existsOne()
@@ -667,7 +669,7 @@ class Model
 
     /**
      * Establece condicion de busqueda con clave primaria
-     * 
+     *
      * @param DbQuery $dbQuery
      */
     protected function wherePK($dbQuery)
@@ -695,7 +697,7 @@ class Model
 
     /**
      * Verifica si esta persistente en la BD el objeto actual
-     * 
+     *
      * @return boolean
      */
     public function exists()
@@ -708,9 +710,9 @@ class Model
 
     /**
      * Realiza un update del registro sobre la tabla
-     * 
+     *
      * @param array $data información a ser guardada
-     * @return Bool 
+     * @return Bool
      */
     public function update($data = NULL)
     {
@@ -723,7 +725,7 @@ class Model
         if (FALSE === $this->beforeUpdate() || FALSE === $this->beforeSave()) {
             return FALSE;
         }
-        
+
         // Callback de validaciónes
         if (FALSE === $this->validate(TRUE)) {
             return FALSE;
@@ -752,8 +754,8 @@ class Model
 
     /**
      * Elimina el registro correspondiente al objeto
-     * 
-     * @return Bool 
+     *
+     * @return Bool
      */
     public function delete()
     {
@@ -772,9 +774,9 @@ class Model
 
     /**
      * Elimina el registro por medio de la clave primaria
-     * 
+     *
      * @param string $value
-     * @return Bool 
+     * @return Bool
      */
     public function deleteByPK($value)
     {
@@ -818,8 +820,9 @@ class Model
     }
 
     /**
-     * Inicia una transacci&oacute;n si es posible
+     * Inicia una transacción si es posible
      *
+     * @return boolean
      */
     public function begin()
     {
@@ -827,8 +830,9 @@ class Model
     }
 
     /**
-     * Cancela una transacci&oacute;n si es posible
+     * Cancela una transacción si es posible
      *
+     * @return boolean
      */
     public function rollback()
     {
@@ -836,8 +840,9 @@ class Model
     }
 
     /**
-     * Hace commit sobre una transacci&oacute;n si es posible
+     * Hace commit sobre una transacción si es posible
      *
+     * @return boolean
      */
     public function commit()
     {
@@ -845,12 +850,12 @@ class Model
     }
 
     /**
-     * Crea una relacion 1-1 inversa entre dos modelos
+     * Crea una relación 1-1 inversa entre dos modelos
      *
      * @param string $relation
      *
      * model : nombre del modelo al que se refiere
-     * fk : campo por el cual se relaciona (llave foranea)
+     * fk : campo por el cual se relaciona (llave foránea)
      */
     protected function belongsTo($model, $fk)
     {
@@ -859,12 +864,12 @@ class Model
     }
 
     /**
-     * Crea una relacion 1-1 entre dos modelos
+     * Crea una relación 1-1 entre dos modelos
      *
      * @param string $relation
      *
      * model : nombre del modelo al que se refiere
-     * fk : campo por el cual se relaciona (llave foranea)
+     * fk : campo por el cual se relaciona (llave foránea)
      */
     protected function hasOne($model, $fk = NULL)
     {
@@ -873,12 +878,12 @@ class Model
     }
 
     /**
-     * Crea una relacion 1-n entre dos modelos
+     * Crea una relación 1-n entre dos modelos
      *
      * @param string $relation
      *
      * model : nombre del modelo al que se refiere
-     * fk : campo por el cual se relaciona (llave foranea)
+     * fk : campo por el cual se relaciona (llave foránea)
      */
     protected function hasMany($model, $fk = NULL)
     {
@@ -887,14 +892,14 @@ class Model
     }
 
     /**
-     * Crea una relacion n-n o 1-n inversa entre dos modelos
+     * Crea una relación n-n o 1-n inversa entre dos modelos
      *
      * @param string $relation
      *
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foranea)
      * key: campo llave que identifica al propio modelo
-     * through : atrav�s de que tabla
+     * through : através de que tabla
      */
     protected function hasAndBelongsToMany($model, $through, $fk = NULL, $key = NULL)
     {
@@ -907,7 +912,7 @@ class Model
     /**
      * Devuelve los registros del modelo al que se está asociado.
      *
-     * @param string $mmodel nombre del modelo asociado
+     * @param string $model nombre del modelo asociado
      * @return array|NULL|FALSE si existen datos devolverá un array,
      * NULL si no hay datos asociados aun, y false si no existe ninguna asociación.
      */
@@ -980,7 +985,7 @@ class Model
                     ->where("th.{$key} = :pk")
                     //->where("this.{$pk1} = :pk")
                     ->bindValue('pk', $this->{$pk1});
-                    
+
             return $model::findAll();
         }
         throw new ActiveRecordException("No existe la asociacion con $model en el modelo " . get_called_class());
@@ -988,7 +993,7 @@ class Model
 
     /**
      *
-     * @return DbQuery 
+     * @return DbQuery
      */
     private static function getDbQuery()
     {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -13,8 +14,8 @@
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
  * @category   Kumbia
- * @package    Db
- * @subpackage Behaviors 
+ * @package    ActiveRecord
+ * @subpackage Paginator
  * @copyright  Copyright (c) 2005-2012 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -25,13 +26,9 @@ use ActiveRecord\Model;
 use ActiveRecord\Query\DbQuery;
 
 /**
- * Componente para páginar
+ * ActiveRecord\Paginator\Paginator
  *
- * Permite paginar arrays y modelos
- *
- * @category   Kumbia
- * @package    Db
- * @subpackage Behaviors
+ * Componente para paginar. Soporta arrays y modelos
  */
 class Paginator
 {
@@ -84,7 +81,7 @@ class Paginator
         $query->columns($arrayQuery['columns'])->limit($per_page)->offset($offset);
 
         $items = $model->query($query)->fetchAll();
-        
+
         $object = new \stdClass();
 
         $object->next = ($offset + $per_page) < $numItems ? ($page + 1) : FALSE;

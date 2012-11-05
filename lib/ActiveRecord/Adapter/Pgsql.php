@@ -13,10 +13,11 @@
  * obtain it through the world-wide-web, please send an email
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
- * Clase para consultas SQL para PostgreSQL
- * 
+ * Clase base para los adaptadores de Base de Datos
+ *
  * @category   Kumbia
- * @package    DbPool 
+ * @package    ActiveRecord
+ * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -26,16 +27,20 @@ namespace ActiveRecord\Adapter;
 use ActiveRecord\Adapter\Adapter;
 use ActiveRecord\Metadata\Metadata;
 
+/**
+ * \ActiveRecord\Adapter\Adapter\Pgsql
+ *
+ * Adaptador para conectarse a bases de datos PostgreSQL
+ */
 class Pgsql extends Adapter
 {
 
     /**
      * Obtiene la metadata de una Tabla
-     * 
+     *
      * @param string $schema
      * @param string $table
      * @return Rows
-     * 
      */
     public function describe($table, $schema = null)
     {
@@ -46,10 +51,10 @@ class Pgsql extends Adapter
                 WHEN ct.constraint_type='FOREIGN KEY' THEN 'FK'
                 WHEN ct.constraint_type='CHECK' THEN 'CHK'
                 ELSE '' END AS Index,
-                c.column_default as Default, 
-                c.is_nullable as Null, 
+                c.column_default as Default,
+                c.is_nullable as Null,
                 c.udt_name as Type,
-                CASE 
+                CASE
                 WHEN c.character_maximum_length is null THEN (c.numeric_precision) ELSE c.character_maximum_length END as length
                 FROM information_schema.columns c
                 LEFT JOIN information_schema.constraint_column_usage cu ON

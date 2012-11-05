@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -13,9 +14,9 @@
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
  * Resultado de una consulta con ActiveRecord
- * 
+ *
  * @category   Kumbia
- * @package    Db 
+ * @package    DbPool
  * @copyright  Copyright (c) 2005-2010 KumbiaPHP Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -32,10 +33,14 @@ class ResultSet implements Iterator
      * @var resource
      */
     protected $_result;
+
     /**
-     * 
+     * Posición del cursor
+     *
+     * @var int
      */
     private $_position = 0;
+
     /**
      * Constructor
      *
@@ -44,28 +49,31 @@ class ResultSet implements Iterator
     {
         $this->_result = $result;
     }
+
     /**
      * fetch Array
-     * 
+     *
      * @return Array
      */
     public function fetchArray ()
     {
         return $this->_result->fetchAll(PDO::FETCH_ASSOC);
     }
+
     /**
      * Fetch Object
-     * 
+     *
      * @param string Class
-     * @return Array
+     * @return array
      */
     public function fetchObject ($class = 'stdClass')
     {
         return $this->_result->fetchObject($class);
     }
+
     /**
      * Fetch All
-     * 
+     *
      * @param int Fetch
      * @return ResultSet
      */
@@ -73,25 +81,28 @@ class ResultSet implements Iterator
     {
         return $this->_result->fetchAll($fetch);
     }
+
     /**
      * Cantidad de filas afectadas por la sentencia
-     * 
+     *
      * @return int
      */
     public function affectRows ()
     {
         return $this->_result->rowCount();
     }
+
     /**
-     * reset result set pointer 
+     * Reset resultset pointer
      * (implementation required by 'rewind()' method in Iterator interface)
      */
     public function rewind ()
     {
         $this->_pointer = 0;
     }
+
     /**
-     * get current row set in result set 
+     * get current row set in result set
      * (implementation required by 'current()' method in Iterator interface)
      */
     public function current ()
@@ -101,25 +112,29 @@ class ResultSet implements Iterator
         }
         return $this->fetchObject();
     }
+
     /**
-     * Obtiene la posición actual del Puntero 
-     * 
+     * Obtiene la posición actual del Puntero
+     *
      */
     public function key ()
     {
         return $this->_pointer;
     }
+
     /**
-     * Mueve el puntero a la siguiente posición 
-     * 
+     * Mueve el puntero a la siguiente posición
+     *
      */
     public function next ()
     {
         ++ $this->_pointer;
     }
+
     /**
-     * Determina si el puntero del ResultSet es valido 
-     * 
+     * Determina si el puntero del ResultSet es valido
+     *
+     * @return boolean
      */
     public function valid ()
     {

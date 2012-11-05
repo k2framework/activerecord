@@ -13,10 +13,11 @@
  * obtain it through the world-wide-web, please send an email
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
- * Clase para consultas SQL para MySQL
- * 
+ * Clase base para los adaptadores de Base de Datos
+ *
  * @category   Kumbia
- * @package    DbPool 
+ * @package    ActiveRecord
+ * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -26,6 +27,11 @@ namespace ActiveRecord\Adapter;
 use ActiveRecord\Adapter\Adapter;
 use ActiveRecord\Metadata\Metadata;
 
+/**
+ * \ActiveRecord\Adapter\Adapter\Mysql
+ *
+ * Adaptador para conectarse a bases de datos MySQL
+ */
 class Mysql extends Adapter
 {
 
@@ -35,7 +41,7 @@ class Mysql extends Adapter
      * @param string $table
      * @param string $schema
      * @return array
-     * */
+     */
     public function describe($table, $schema = null)
     {
         try {
