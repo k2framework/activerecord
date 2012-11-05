@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -13,9 +14,10 @@
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
  * Clase para consultas SQL
- * 
+ *
  * @category   Kumbia
- * @package    DbPool 
+ * @package    ActiveRecord
+ * @subpackage Query
  * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -58,7 +60,7 @@ class DbQuery
 
     /**
      * Clausula WHERE con OR
-     * 
+     *
      * @param string $conditions condiciones OR
      * @return DbQuery
      */
@@ -70,7 +72,7 @@ class DbQuery
 
     /**
      * Método interno para crear la Clusula WHERE
-     * 
+     *
      * @param string $conditions
      * @param bool   $type TRUE = AND; FALSE = OR
      * @return string clausula
@@ -90,7 +92,7 @@ class DbQuery
 
     /**
      * Parámetros que seran enlazados a la setencia SQL
-     * 
+     *
      * @param array $bind
      * @return DbQuery
      */
@@ -104,7 +106,7 @@ class DbQuery
 
     /**
      * Parámetro que sera enlazado a la setencia SQL
-     * 
+     *
      * @param string $bind
      * @param string $value
      * @return DbQuery
@@ -117,7 +119,7 @@ class DbQuery
 
     /**
      * Retorna los elementos para ser enlazados
-     * 
+     *
      * @return array
      */
     public function getBind()

@@ -13,11 +13,12 @@
  * obtain it through the world-wide-web, please send an email
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
- * Metadata de modelo
- * 
+ * Clase para consultas SQL para PostgreSQL
+ *
  * @category   Kumbia
- * @package    DbPool 
- * @copyright  Copyright (c) 2005-2010 Kumbia Team (http://www.kumbiaphp.com)
+ * @package    ActiveRecord
+ * @subpackage Metadata
+ * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
 
@@ -25,6 +26,11 @@ namespace ActiveRecord\Metadata;
 
 use ActiveRecord\Metadata\Attribute;
 
+/**
+ * \ActiveRecord\Metadata\Metadata
+ *
+ * Obtiene y almacena los meta-datos de los modelos
+ */
 class Metadata
 {
 
@@ -37,8 +43,8 @@ class Metadata
 
     /**
      * Lista de atributos
-     * 
-     * @var array 
+     *
+     * @var array
      */
     private $_attributesList = array();
 

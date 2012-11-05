@@ -14,9 +14,10 @@
  * to license@kumbiaphp.com so we can send you a copy immediately.
  *
  * Clase base para los adaptadores de Base de Datos
- * 
+ *
  * @category   Kumbia
- * @package    DbPool 
+ * @package    ActiveRecord
+ * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
@@ -29,12 +30,17 @@ use ActiveRecord\DbPool\DbPool;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Config\Parameters;
 
+/**
+ * \ActiveRecord\Adapter\Adapter
+ *
+ * Clase base para adaptadores
+ */
 abstract class Adapter
 {
 
     /**
      * Instancias de adaptadores por conexion
-     * 
+     *
      * @var array
      */
     private static $adapters = array();
@@ -74,7 +80,7 @@ abstract class Adapter
      *
      * @param string $connection conexion a base de datos en databases.ini
      * @return Adapter
-     * @throw KumbiaException
+     * @throws KumbiaException
      */
     public static function factory($configName = NULL)
     {
@@ -107,7 +113,7 @@ abstract class Adapter
      *
      * @param DbQuery $dbQuery
      * @return string
-     * @throw KumbiaException
+     * @throws KumbiaException
      */
     public function query($dbQuery)
     {
@@ -298,7 +304,7 @@ abstract class Adapter
 
     /**
      * Prepara la consulta SQL
-     * 
+     *
      * @param string $sql
      * @return PDOStatement
      */
@@ -310,7 +316,7 @@ abstract class Adapter
 
     /**
      * Prepara la consulta SQL asociada al objeto dbQuery
-     * 
+     *
      * @param DbQuery objeto de consulta
      * @return PDOStatement
      */
@@ -322,7 +328,7 @@ abstract class Adapter
 
     /**
      *
-     * @return \ActiveRecord\Query\DbQuery 
+     * @return \ActiveRecord\Query\DbQuery
      */
     public function createQuery()
     {
@@ -332,7 +338,7 @@ abstract class Adapter
     /**
      *
      * @param DbQuery $query
-     * @return \PDOStatement 
+     * @return \PDOStatement
      */
     public function execute(DbQuery $query)
     {

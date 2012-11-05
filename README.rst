@@ -19,7 +19,7 @@ Configuración:
     use ActiveRecord\Config\Config;
     use ActiveRecord\Config\Parameters;
 
-    Config::add(new Parameters("default",array(
+    Config::add(new Parameters("default", array(
             'username' => 'root',
             'password' => 'contraseña',
             'host' => 'localhost', //por defecto localhost
@@ -61,7 +61,7 @@ Consultando registros:
 La lib ofrece una serie de métodos para la realización de consultas a nuestra base de datos, veamos algunos ejemplos:
 
 ::
-    
+
     <?php
 
     //consultando todos los registros en la tabla.
@@ -74,7 +74,7 @@ La lib ofrece una serie de métodos para la realización de consultas a nuestra 
 
     //obteniendo el resultados como una matriz
 
-    $result = Usuarios::findAll("array"); //nos devuelve todos los registros de la tabla en la base de datos como un arreglo. 
+    $result = Usuarios::findAll("array"); //nos devuelve todos los registros de la tabla en la base de datos como un arreglo.
 
     foreach($result as $e){
         echo $e["nombres"]; //cada elemento iterado en el foreach es un arreglo
@@ -89,13 +89,13 @@ Para filtrar consultas el active record nos ofrece una clase DbQuery que nos per
 
     <?php
 
-    //el metodo creaetQuery() crea y nos devuelve una instancia de DbQuery
+    //El metodo createQuery() crea y nos devuelve una instancia de DbQuery
 
-    Usuarios::creaetQuery()
+    Usuarios::createQuery()
                 ->where("nombres = :nom")
                 ->bindValue("nom", "Manuel José");
 
-    //ya que el active record trabaja con PDO, y este permite crear consultas preparadas, es decir, los valores 
+    //ya que el active record trabaja con PDO, y este permite crear consultas preparadas, es decir, los valores
     //de variables no se colocan directamente en la cadena de consulta, sino que se pasan a traves de métodos
     //de la clase PDO, que se encargan de filtrar y sanitizar los valores de la consulta, el DbQuery permite establecer
     //estos valores directamente en su clase a traves de los métodos bindValue($param,$value) y bind($params).
