@@ -18,7 +18,7 @@
  * @category   Kumbia
  * @package    ActiveRecord
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
+ * @copyright  Copyright (c) 2005-2012 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
 
@@ -39,21 +39,21 @@ abstract class Adapter
 {
 
     /**
-     * Instancias de adaptadores por conexion
+     * Instancias de adaptadores por conexión
      *
      * @var array
      */
     private static $adapters = array();
 
     /**
-     * Nombre de conexion
+     * Nombre de conexión
      *
      * @var string
      */
     protected $config;
 
     /**
-     * Genera la descripcion de una tabla
+     * Genera la descripción de una tabla
      *
      * @param string $table tabla
      * @param string $schema schema
@@ -64,7 +64,7 @@ abstract class Adapter
     /**
      * Constructor
      *
-     * @param string $connection nombre de conexion en databases.ini
+     * @param \ActiveRecord\Config\Parameters $config
      */
     public function __construct(Parameters $config)
     {
@@ -79,8 +79,8 @@ abstract class Adapter
      * Obtiene instancia de adaptador en funcion de la conexion (utiliza Singleton)
      *
      * @param string $connection conexion a base de datos en databases.ini
-     * @return Adapter
-     * @throws KumbiaException
+     * @return \ActiveRecord\Adapter\Adapter
+     * @throws Exception
      */
     public static function factory($configName = NULL)
     {
@@ -91,8 +91,9 @@ abstract class Adapter
         if (!isset(self::$adapters[$configName])) {
 
             if (!$config = Config::get($configName)) {
-                throw new \Exception("No existe la configuración de conexion <b>$configName</b>");
+                throw new \Exception("No existe la configuración de conexión $configName");
             }
+
             if (!$config->getType()) {
                 throw new \Exception("Debe definir el tipo de base de datos a la que se conectará (mysql, postgres, oracle, etc..)");
             }
@@ -113,7 +114,7 @@ abstract class Adapter
      *
      * @param DbQuery $dbQuery
      * @return string
-     * @throws KumbiaException
+     * @throws Exception
      */
     public function query($dbQuery)
     {

@@ -47,6 +47,7 @@ class Usuarios extends Model
 {
 
 }
+
 ?>
 ```
 

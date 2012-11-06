@@ -349,7 +349,7 @@ class Model
     }
 
     /**
-     * Obtiene la conexion
+     * Obtiene la conexión
      *
      * @return string
      */
@@ -362,7 +362,7 @@ class Model
      * Ejecuta una setencia SQL aplicando Prepared Statement
      *
      * @param string $sql Setencia SQL
-     * @param array $params parametros que seran enlazados al SQL
+     * @param array $params parámetros que seran enlazados al SQL
      * @param string $fetchMode
      * @return ActiveRecord
      */
@@ -433,7 +433,7 @@ class Model
     }
 
     /**
-     * Efectua una busqueda
+     * Efectua una búsqueda
      *
      * @param string $fetchMode
      * @return Model
@@ -445,7 +445,7 @@ class Model
     }
 
     /**
-     * Obtiene un array con los items resultantes de la busqueda
+     * Obtiene un array con los items resultantes de la búsqueda
      *
      * @param string $fetchMode
      * @return array
