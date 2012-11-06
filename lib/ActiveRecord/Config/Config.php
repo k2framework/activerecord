@@ -53,7 +53,7 @@ abstract class Config
      */
     public static function add(Parameters $parameters)
     {
-        if ( !self::$defaultConectionName ) {
+        if (!self::$defaultConectionName) {
             self::setDefaultId($parameters->getId());
         }
         if (!self::has($parameters->getId())) {
@@ -99,7 +99,7 @@ abstract class Config
      */
     public static function getDefault()
     {
-        return self::get(self::$defaultConectionName);
+        return self::$defaultConectionName ? self::get(self::$defaultConectionName) : NULL;
     }
 
     /**
