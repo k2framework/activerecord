@@ -85,7 +85,7 @@ abstract class Adapter
     public static function factory($configName = NULL)
     {
         //si es null establece "default"
-        $configName || $configName = Config::getDefault();
+        $configName || $configName = Config::getDefaultId();
 
         // Si no existe el Singleton
         if (!isset(self::$adapters[$configName])) {
