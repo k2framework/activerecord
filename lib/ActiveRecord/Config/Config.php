@@ -18,7 +18,7 @@
  * @category   Kumbia
  * @package    ActiveRecord
  * @subpackage Config
- * @copyright  Copyright (c) 2005-2009 Kumbia Team (http://www.kumbiaphp.com)
+ * @copyright  Copyright (c) 2005-2012 Kumbia Team (http://www.kumbiaphp.com)
  * @license    http://wiki.kumbiaphp.com/Licencia     New BSD License
  */
 
@@ -27,15 +27,17 @@ namespace ActiveRecord\Config;
 use ActiveRecord\Config\Parameters;
 
 /**
+ * \ActiveRecord\Config
+ *
  * Description of Config
  *
  * @author maguirre
  */
-class Config
+abstract class Config
 {
 
     /**
-     * Bolsa de parametros de conexión
+     * Bolsa de parámetros de conexión
      */
     protected static $parameters = array();
 
@@ -45,22 +47,22 @@ class Config
     protected static $defaultConectionName;
 
     /**
-     * Agrega un conjunto de parametros a la configuración de ActiveRecord
+     * Agrega un conjunto de parámetros a la configuración de ActiveRecord
      *
-     * @param \ActiveRecord\Config\Parameters $param
+     * @param \ActiveRecord\Config\Parameters $parameters
      */
-    public static function add(Parameters $param)
+    public static function add(Parameters $parameters)
     {
-        if ( !self::$defaultConectionName ){
-            self::setDefault($param->getId());
+        if ( !self::$defaultConectionName ) {
+            self::setDefaultId($parameters->getId());
         }
-        if (!self::has($param->getId())) {
-            self::$parameters[$param->getId()] = $param;
+        if (!self::has($parameters->getId())) {
+            self::$parameters[$parameters->getId()] = $parameters;
         }
     }
 
     /**
-     * Verifica si existe unos parametros de conexión apartir de su Id
+     * Verifica si existe unos parámetros de conexión apartir de su Id
      *
      * @param string $id
      */
@@ -70,10 +72,10 @@ class Config
     }
 
     /**
-     * Obtiene un conjunto de parametros de conexión apartir de su id
+     * Obtiene un conjunto de parámetros de conexión apartir de su id
      *
      * @param type $id
-     * @return Parameters
+     * @return \ActiveRecord\Config\Parameters
      */
     public static function get($id)
     {
@@ -91,11 +93,21 @@ class Config
     }
 
     /**
+     * Devuelve los parámetros de la conexión por defecto
+     *
+     * @return \ActiveRecord\Config\Parameters
+     */
+    public static function getDefault()
+    {
+        return self::get(self::$defaultConectionName);
+    }
+
+    /**
      * Establece el id de la conexión por defecto
      *
      * @param string $id
      */
-    public static function setDefault($id)
+    public static function setDefaultId($id)
     {
         self::$defaultConectionName = $id;
     }
@@ -105,7 +117,7 @@ class Config
      *
      * @return string
      */
-    public static function getDefault()
+    public static function getDefaultId()
     {
         return self::$defaultConectionName;
     }

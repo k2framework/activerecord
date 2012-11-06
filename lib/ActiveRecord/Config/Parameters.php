@@ -34,13 +34,46 @@ namespace ActiveRecord\Config;
 class Parameters
 {
 
-    protected $id;
-    protected $username;
-    protected $password;
-    protected $port;
-    protected $dbName;
-    protected $host = 'localhost';
+    /**
+     * Tipo de adaptador
+     */
     protected $type;
+
+    /**
+     * Id de la conexión
+     *
+     * @var string
+     */
+    protected $id;
+
+    /**
+     * Usuario de la conexión
+     */
+    protected $username;
+
+    /**
+     * Password de la conexión
+     */
+    protected $password;
+
+    /**
+     * Host de la conexión
+     */
+    protected $host = 'localhost';
+
+    /**
+     * Puerto de la conexión
+     */
+    protected $port;
+
+    /**
+     * Nombre de la base de datos
+     */
+    protected $dbName;
+
+    /**
+     * Charset de la conexión
+     */
     protected $charset;
 
     /**
@@ -52,11 +85,11 @@ class Parameters
     function __construct($id, array $config = array())
     {
         $this->id = $id;
+        isset($config['type']) && $this->type = $config['type'];
         isset($config['username']) && $this->username = $config['username'];
         isset($config['password']) && $this->password = $config['password'];
         isset($config['name']) && $this->dbName = $config['name'];
         isset($config['host']) && $this->host = $config['host'];
-        isset($config['type']) && $this->type = $config['type'];
         isset($config['port']) && $this->port = $config['port'];
         isset($config['charset']) && $this->charset = $config['charset'];
     }
@@ -195,6 +228,7 @@ class Parameters
     public function setType($type)
     {
         $this->type = $type;
+        return $this;
     }
 
     /**
