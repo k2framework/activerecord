@@ -1,19 +1,14 @@
 Configuración Inicial
 =====================
 
-Esta librería permite comunicarnos con una ó varias bases de datos en una aplicación mediante una capa de abstracción
-de base de datos, pero para lograr ello debemos indicarle a la misma cual ó cuales son las configuraciones de
-conexión de la base de datos.
+ActiveRecord permite administrar varias configuraciones de bases de datos que podrán ser usadas por
+nuestros modelos.
 
-Para configurar una ó varias conexiones a Base de Datos debemos hacer uso de dos clases principales,
-una es la clase Parameters y la otra la clase Config.
+Estableciendo parámetros de conexión
+------------------------------------
 
-La clase Parameters
--------------------
-
-Esta clase será la que contenga los valores de configuración de una base de datos en especifico, dichos
-valores pueden ser establicidos en el constructor de la clase al instanciarla, ó con el uso de métodos setters,
-veamos un ejemplo:
+La clase Parameters nos permitirá describir conexiones, esta clase nos da la libertad de definir
+los parámetros de varias formas:
 
 .. code-block:: php
 
@@ -23,7 +18,7 @@ veamos un ejemplo:
 
 	//en el siguiente ejemplo crearemos la configuración en el constructor de la clase:
 
-	$mysql = new Parameters("config_mysql", array(
+	$mysql = new Parameters("configMysql", array(
 		"type"     => "mysql"
 		'username' => "root"
 		"password" => "123456"
@@ -33,7 +28,7 @@ veamos un ejemplo:
 
 	//Ahora configuraremos otra conexión, pero a traves de los métodos setters de la clase:
 
-	$postgres = new Parameters("config_postgres"); //no pasamos el arreglo con la configuración.
+	$postgres = new Parameters("configPostgres"); //no pasamos el arreglo con la configuración.
 
 	$postgres->setUsername("administrador")
 		->setPassword("admin123Admin")
@@ -44,13 +39,14 @@ veamos un ejemplo:
 
 Como se puede ver, esas son las dos formas de crear la configuración de acceso a una base de datos.
 
-NOTA: en el constructor el indice para el nombre de la base de datos debe ser "name" aunque realmente dicho valor
-se almacena en la propiedad $dbName de la clase Parameters, por eso el método para establecer el nombre de la
-base de datos es "setDbName()".
+.. highlights::
 
-Es importante conocer el nombre de la configuración, que para el ejemplo la config de mysql se llama "config_mysql" y
-la de postgres "config_postgres", ya que si queremos que un modelo se conecte a una ú otra debemos especificarlo
-en el atributo $conection del módelo, ejemplo:
+	NOTA: en el constructor el indice para el nombre de la base de datos debe ser "name" aunque realmente dicho valor
+	se almacena en la propiedad $dbName de la clase Parameters, por eso el método para establecer el nombre de la
+	base de datos es "setDbName()".
+
+Anteriormente hemos usado los nombres "configMysql" y "configPostgres", con estos nombres podremos identificar
+la conexión y asignarla al modelo:
 
 .. code-block:: php
 
@@ -74,13 +70,12 @@ en el atributo $conection del módelo, ejemplo:
 		//tomará la primera configuración establecida en la clase Config
 	}
 
-La clase Config
----------------
+Administrador de Conexiones
+---------------------------
 
-Aunque en la clase Parameters se establescan los parámetros de configuración de acceso a nuestra base de datos,
-es en la clase Config donde el ActiveRecord busca esas configuraciones, por lo tanto para que la libreria
-reconozca y pueda usar los parámetros de nuestra BD, debemos pasarlos a la clase Config, esto
-se logra de la siguiente manera:
+De acuerdo al nombre de conexión que asignemos al modelo, ActiveRecord solicitará a la clase Config
+estos parámetros cuando los requiera. Config actúa como un administrador de conexiones, por esto
+debemos agregar los parametros a esta para que estén disponibles para nuestros modelos:
 
 .. code-block:: php
 
@@ -90,14 +85,16 @@ se logra de la siguiente manera:
 	use ActiveRecord\Config\Config;
 
 	//creamos los objetos Parameters necesarios, como en el ejemplo anterior.
-	.....
-	.....
+	$mysql = new Parameters("configMysql", array(
+		"type"     => "mysql"
+		'username' => "root"
+		"password" => "123456"
+		"host"     => "localhost"
+		"name"     => "mi_base_de_datos"
+	));
 
-	//ahora introduciremos esos parametros de configuración en la clase Config:
-
+	//luego agregamos los parametros a la configuración
 	Config::add($mysql);
+
+	//multiples conexiones pueden ser agregadas a Config
 	Config::add($postgres);
-
-	//con esto ya tenemos configuradas das conexiones a bases de datos, una para mysql y otra para postgres.
-
-Como se puede ver, es muy sencillo configurar una ó varias conexiones a bases de datos en la librería.
