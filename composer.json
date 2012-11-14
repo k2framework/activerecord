@@ -3,5 +3,10 @@
     "type": "library",
     "autoload":{
         "psr-0":{"ActiveRecord\\" : "lib/"}
+    },
+    "extra":{
+        "branch-alias":{
+            "dev-master":"1.0-dev"
+        }
     }
 }
