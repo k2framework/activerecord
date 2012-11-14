@@ -7,5 +7,6 @@
     },
     "autoload":{
         "psr-0":{"ActiveRecord\\" : "lib/"}
-    }
+    },
+    "minimum-stability": "dev"
 }
