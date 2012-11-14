@@ -2,8 +2,8 @@
     "name": "kumbiaphp/activerecord",
     "type": "library",
     "require":{
-        "kumbiaphp/event-dispatcher": "self.version",
-        "kumbiaphp/dependency-injection": "self.version"
+        "kumbiaphp/event-dispatcher": "dev-master",
+        "kumbiaphp/dependency-injection": "dev-master"
     },
     "autoload":{
         "psr-0":{"ActiveRecord\\" : "lib/"}
