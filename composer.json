@@ -2,6 +2,6 @@
     "name": "kumbiaphp/activerecord",
     "type": "library",
     "autoload":{
-        "psr-0":{"ActiveRecord" : "lib/"}
+        "psr-0":{"ActiveRecord\\" : "lib/"}
     }
 }
