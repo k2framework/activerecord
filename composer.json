@@ -3,10 +3,5 @@
     "type": "library",
     "autoload":{
         "psr-0":{"ActiveRecord" : "lib/"}
-    },
-    "extra":{
-        "branch-alias":{
-            "dev-master":"dev-php5.3"
-        }
     }
 }
