@@ -34,17 +34,17 @@ class Attribute
     /**
      * Alias del campo
      */
-    public $alias = NULL;
+    public $alias = null;
 
     /**
      * Tipo de dato de cara a la APP
      */
-    public $type = NULL;
+    public $type = null;
 
     /**
      * Valor por defecto del campo
      */
-    public $default = NULL;
+    public $default = null;
 
     /**
      * Longitud del Campo
@@ -54,31 +54,31 @@ class Attribute
     /**
      * Indica si es NULL el campo
      */
-    public $notNull = TRUE;
+    public $notNull = false;
 
     /**
      * Indica si es PK el campo
      */
-    public $PK = FALSE;
+    public $PK = false;
 
     /**
      * Indica si es FK el campo
      */
-    public $FK = FALSE;
+    public $FK = false;
 
     /**
      * Indica si es Unique el campo
      */
-    public $unique = FALSE;
+    public $unique = false;
 
     /**
      * Campo con secuencias (serial o auto-increment)
      */
-    public $autoIncrement = FALSE;
+    public $autoIncrement = false;
 
     /**
      * Formato para fechas
      */
-    public $format = NULL;
+    public $format = null;
 
 }

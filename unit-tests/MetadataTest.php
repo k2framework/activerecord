@@ -19,7 +19,7 @@ class MetadataTest extends PHPUnit_Framework_TestCase
         $this->assertNull($attr->alias);
         $this->assertNull($attr->default);
         $this->assertNull($attr->format);
-        $this->assertTrue($attr->notNull);
+        $this->assertFalse($attr->notNull);
         $this->assertNull($attr->type);
         $this->assertEquals(50, $attr->length);
     }
