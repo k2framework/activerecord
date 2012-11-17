@@ -417,7 +417,7 @@ class Model
             $this->resultSet->execute($dbQuery->getBind());
             return $this->resultSet;
         } catch (\PDOException $e) {
-            throw new SqlException($e, $this->resultSet);
+            throw new SqlException($e, $this->resultSet, $dbQuery->getBind());
         }
     }
 
@@ -624,25 +624,25 @@ class Model
      * Realiza un update sobre la tabla
      *
      * @param array $data información a ser guardada
-     * @return Bool
+     * @return int
      */
     public static function updateAll($data)
     {
         $model = new static();
         // Ejecuta la consulta
-        return $model->query(self::getDbQuery()->update($data));
+        return $model->query(self::getDbQuery()->update($data))->rowCount();
     }
 
     /**
      * Realiza un delete sobre la tabla
      *
-     * @return Bool
+     * @return int
      */
     public static function deleteAll()
     {
         $model = new static();
         // Ejecuta la consulta
-        return $model->query(self::getDbQuery()->delete());
+        return $model->query(self::getDbQuery()->delete())->rowCount();
     }
 
     /**
