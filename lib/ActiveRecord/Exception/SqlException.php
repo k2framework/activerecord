@@ -2,25 +2,23 @@
 
 namespace ActiveRecord\Exception;
 
-use \Exception;
-use \PDOStatement;
+use ActiveRecord\Exception\ActiveRecordException;
 
 /**
  * Description of ActiveRecordException
  *
  * @author maguirre
  */
-class SqlException extends Exception
+class SqlException extends ActiveRecordException
 {
 
-    function __construct(Exception $e, PDOStatement $st = NULL)
+    function __construct(\Exception $e, \PDOStatement $st = null, array $parameters = null)
     {
         parent::__construct($e->getMessage());
 
         if ($st) {
-            ob_start();
-            $st->debugDumpParams();
-            $this->message .= '<pre>' . ob_get_clean() . '</pre>';
+            $this->message .="<pre>Consulta: {$st->queryString}</pre>";
+            $this->message .="<pre>Parametros: " . print_r($parameters, true) . "</pre>";
         }
     }
 
