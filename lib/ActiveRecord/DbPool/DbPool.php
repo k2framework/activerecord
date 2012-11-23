@@ -85,7 +85,7 @@ class DbPool
 
             return self::$connections[$config->getId()];
         } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage());
+            throw new $e;
         }
     }
 

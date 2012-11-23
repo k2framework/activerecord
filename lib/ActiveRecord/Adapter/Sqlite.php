@@ -94,7 +94,7 @@ var_dump($results->fetchObject());die;
                 }
             }
         } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage());
+            throw $e;
         }
         return $metadata;
     }

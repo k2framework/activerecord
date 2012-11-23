@@ -94,7 +94,7 @@ class Mysql extends Adapter
                 }
             }
         } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage());
+            throw $e;
         }
         return $metadata;
     }
