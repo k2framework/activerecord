@@ -46,50 +46,35 @@ class Sqlite extends Adapter
     {
         try {
             $results = $this->pdo()->query("PRAGMA table_info({$table})");
-var_dump($results->fetchObject());die;
             if ($results) {
                 $metadata = new Metadata();
-                while ($field = $results->fetchObject()) {
+                while ($field = $results->fetch(\PDO::FETCH_ASSOC)) {
                     //Nombre del Campo
-                    $attribute = $metadata->attribute($field->Field);
+                    $attribute = $metadata->attribute($field['name']);
                     //alias
-                    $attribute->alias = ucwords(strtr($field->Field, '_-', '  '));
+                    $attribute->alias = ucwords(strtr($field['name'], '_-', '  '));
 
-                    // autoincremental
-                    if ($field->Extra === 'auto_increment') {
-                        $attribute->autoIncrement = TRUE;
+                    if ('1' === $field['pk']) {//se toma el campo con clave primaria como imcrementable
+                        $attribute->autoIncrement = true;
+                        $metadata->setPK($field['name']);
+                        $attribute->PK = true;
                     }
 
                     // valor por defecto
-                    $attribute->default = $field->Default;
+                    $attribute->default = $field['dflt_value'];
 
                     //puede ser null?
-                    if ($field->Null == 'NO') {
-                        $attribute->notNull = TRUE;
+                    if ('1' === $field['notnull']) {
+                        $attribute->notNull = true;
                     }
 
                     //tipo de dato y longitud
-                    if (preg_match('/^(\w+)\((\w+)\)$/', $field->Type, $matches)) {
+                    if (preg_match('/^(\w+)\((\w+)\)$/', $field['type'], $matches)) {
                         $attribute->type = $matches[1];
                         $attribute->length = $matches[2];
                     } else {
-                        $attribute->type = $field->Type;
+                        $attribute->type = $field['type'];
                         $attribute->length = NULL;
-                    }
-
-                    //indices
-                    switch ($field->Key) {
-                        case 'PRI':
-                            $metadata->setPK($field->Field);
-                            $attribute->PK = TRUE;
-                            break;
-                        case 'FK':
-                            $metadata->setFK($field->Field);
-                            $attribute->FK = TRUE;
-                            break;
-                        case 'UNI':
-                            $attribute->unique = TRUE;
-                            break;
                     }
                 }
             }
