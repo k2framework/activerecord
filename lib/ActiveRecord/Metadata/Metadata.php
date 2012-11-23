@@ -70,11 +70,11 @@ class Metadata
      * */
     public function attribute($attribute = NULL)
     {
-        if (!isset($this->_attributes[$attribute])) {
-            $this->_attributes[$attribute] = new Attribute();
-            $this->_attributesList[] = $attribute;
+        if (!isset($this->attributes[$attribute])) {
+            $this->attributes[$attribute] = new Attribute();
+            $this->attributesList[] = $attribute;
         }
-        return $this->_attributes[$attribute];
+        return $this->attributes[$attribute];
     }
 
     /**
@@ -84,7 +84,7 @@ class Metadata
      */
     public function getAttributes()
     {
-        return $this->_attributes;
+        return $this->attributes;
     }
 
     /**
@@ -94,7 +94,7 @@ class Metadata
      */
     public function getAttributesList()
     {
-        return $this->_attributesList;
+        return $this->attributesList;
     }
 
     /**
