@@ -74,6 +74,7 @@ class DbPool
             switch ($config->getType()) {
                 case 'sqlite':
                     $dsn = "{$config->getType()}:{$config->getDbName()}";
+                    break;
                 default:
                     $dsn = "{$config->getType()}:host={$config->getHost()};dbname={$config->getDbName()}";
             }
