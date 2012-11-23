@@ -71,9 +71,13 @@ class DbPool
 
         try {
             // conecta con pdo
-            self::$connections[$config->getId()] = new PDO(
-                            $config->getType() . ':host=' . $config->getHost() . ';dbname=' . $config->getDbName(),
-                            $config->getUsername(),
+            switch ($config->getType()) {
+                case 'sqlite':
+                    $dsn = "{$config->getType()}:{$config->getDbName()}";
+                default:
+                    $dsn = "{$config->getType()}:host={$config->getHost()};dbname={$config->getDbName()}";
+            }
+            self::$connections[$config->getId()] = new PDO($dsn, $config->getUsername(),
                             $config->getPassword(), self::$attributes);
 
             self::$connections[$config->getId()]
