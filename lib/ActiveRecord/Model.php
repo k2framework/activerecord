@@ -219,7 +219,7 @@ class Model
      *
      * @return boolean
      */
-    protected function validate($update = FALSE)
+    protected function validate($update = false)
     {
 
     }
@@ -384,7 +384,7 @@ class Model
             echo $this->resultSet->errorCode();
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -583,13 +583,13 @@ class Model
         }
 
         // Callback antes de crear
-        if (FALSE === $this->beforeCreate() || FALSE === $this->beforeSave()) {
-            return FALSE;
+        if (false === $this->beforeCreate() || false === $this->beforeSave()) {
+            return false;
         }
 
         // Callback de validaciónes
-        if (FALSE === $this->validate(FALSE)) {
-            return FALSE;
+        if (false === $this->validate(false)) {
+            return false;
         }
 
         // Nuevo contenedor de consulta
@@ -617,7 +617,7 @@ class Model
             return $this;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -722,18 +722,18 @@ class Model
         }
 
         // Callback antes de actualizar
-        if (FALSE === $this->beforeUpdate() || FALSE === $this->beforeSave()) {
-            return FALSE;
+        if (false === $this->beforeUpdate() || false === $this->beforeSave()) {
+            return false;
         }
 
         // Callback de validaciónes
-        if (FALSE === $this->validate(TRUE)) {
-            return FALSE;
+        if (false === $this->validate(true)) {
+            return false;
         }
 
         // Si no existe el registro
         if (!$this->exists()) {
-            return FALSE;
+            return false;
         }
 
         // Objeto de consulta
@@ -749,7 +749,7 @@ class Model
             return $this;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -769,7 +769,7 @@ class Model
             return $this;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -794,7 +794,7 @@ class Model
             return $this;
         }
 
-        return FALSE;
+        return false;
     }
 
     public static function paginate($page, $per_page = 10, $fetchMode = NULL)
@@ -913,20 +913,20 @@ class Model
      * Devuelve los registros del modelo al que se está asociado.
      *
      * @param string $model nombre del modelo asociado
-     * @return array|NULL|FALSE si existen datos devolverá un array,
+     * @return array|NULL|false si existen datos devolverá un array,
      * NULL si no hay datos asociados aun, y false si no existe ninguna asociación.
      */
     public function get($model)
     {
         if (!isset(self::$relations[get_called_class()])) {
-            return FALSE;
+            return false;
         }
 
         if (isset(self::$relations[get_called_class()]['belongsTo']) &&
                 isset(self::$relations[get_called_class()]['belongsTo'][$model])) {
 
             if (!isset($this->{$fk})) {
-                return FALSE;
+                return false;
             }
 
             $fk = self::$relations[get_called_class()]['belongsTo'][$model];
@@ -938,7 +938,7 @@ class Model
                 isset(self::$relations[get_called_class()]['hasOne'][$model])) {
 
             if (!isset($this->{$fk})) {
-                return FALSE;
+                return false;
             }
 
             $fk = self::$relations[get_called_class()]['hasOne'][$model];
