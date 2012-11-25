@@ -1,4 +1,4 @@
-ActiveRecord 2
+ActiveRecord 2 [![Build Status](https://secure.travis-ci.org/manuelj555/activerecord.png?branch=php5.3)](https://travis-ci.org/manuelj555/activerecord)
 ==============
 
 Nuevo Active Record para la nueva versión de KumbiaPHP que trabaja con PHP 5.3 ó superior, trabaja con PDO.
