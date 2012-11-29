@@ -43,7 +43,7 @@ use ActiveRecord\Exception\ActiveRecordException;
  * la tabla de la base de datos. Cuando se modifican los atributos del
  * objeto, se actualiza la fila de la base de datos.
  */
-class Model
+class Model implements \Serializable
 {
     /**
      * Obtener datos cargados en objeto del Modelo
@@ -69,21 +69,21 @@ class Model
      *
      * @var strings
      */
-    protected $connection = NULL;
+    protected $_connection = NULL;
 
     /**
      * Tabla origen de datos
      *
      * @var string
      */
-    protected static $table = NULL;
+    protected static $_table = NULL;
 
     /**
      * Esquema de datos
      *
      * @var string
      */
-    protected $schema = NULL;
+    protected $_schema = NULL;
 
     /**
      * Objeto DbQuery para implementar chain
@@ -111,13 +111,13 @@ class Model
      *
      * @var array
      */
-    private static $metadata = array();
+    private static $_metadata = array();
 
     /**
      *
      * @var array
      */
-    protected static $relations = array();
+    protected static $_relations = array();
 
     /**
      * Constructor de la class
@@ -130,7 +130,7 @@ class Model
             $this->dump($data);
         }
         $this->initialize();
-        if (!isset(self::$relations[get_called_class()])) {
+        if (!isset(self::$_relations[get_called_class()])) {
             $this->createRelations();
         }
     }
@@ -144,12 +144,12 @@ class Model
     {
         $model = get_called_class();
 
-        if (!isset(self::$metadata[$model])) {
-            self::$metadata[$model] = Adapter::factory($this->getConnection())
+        if (!isset(self::$_metadata[$model])) {
+            self::$_metadata[$model] = Adapter::factory($this->getConnection())
                     ->describe($this->getTable(), $this->getSchema());
         }
 
-        return self::$metadata[$model];
+        return self::$_metadata[$model];
     }
 
     /**
@@ -166,12 +166,12 @@ class Model
 
     protected function initialize()
     {
-
+        
     }
 
     protected function createRelations()
     {
-
+        
     }
 
     /**
@@ -181,7 +181,7 @@ class Model
      */
     protected function beforeCreate()
     {
-
+        
     }
 
     /**
@@ -191,7 +191,7 @@ class Model
      */
     protected function afterCreate()
     {
-
+        
     }
 
     /**
@@ -201,7 +201,7 @@ class Model
      */
     protected function beforeUpdate()
     {
-
+        
     }
 
     /**
@@ -211,7 +211,7 @@ class Model
      */
     protected function beforeSave()
     {
-
+        
     }
 
     /**
@@ -221,7 +221,7 @@ class Model
      */
     protected function validate($update = false)
     {
-
+        
     }
 
     /**
@@ -231,7 +231,7 @@ class Model
      */
     protected function afterUpdate()
     {
-
+        
     }
 
     /**
@@ -241,7 +241,7 @@ class Model
      */
     protected function afterSave()
     {
-
+        
     }
 
     /**
@@ -293,7 +293,7 @@ class Model
      */
     public static function setTable($table)
     {
-        self::$table[get_called_class()] = $table;
+        self::$_table[get_called_class()] = $table;
     }
 
     /**
@@ -305,13 +305,13 @@ class Model
     {
         // Asigna la tabla
         $modelName = get_called_class();
-        if (!isset(self::$table[$modelName])) {
-            self::$table[$modelName] = basename($modelName);
-            self::$table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", self::$table[$modelName]));
+        if (!isset(self::$_table[$modelName])) {
+            self::$_table[$modelName] = basename($modelName);
+            self::$_table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", self::$_table[$modelName]));
         }
 
         // Tabla
-        return self::$table[$modelName];
+        return self::$_table[$modelName];
     }
 
     /**
@@ -322,7 +322,7 @@ class Model
      */
     public function setSchema($schema)
     {
-        $this->schema = $schema;
+        $this->_schema = $schema;
         return $this;
     }
 
@@ -333,7 +333,7 @@ class Model
      */
     public function getSchema()
     {
-        return $this->schema;
+        return $this->_schema;
     }
 
     /**
@@ -344,7 +344,7 @@ class Model
      */
     public function setConnection($conn)
     {
-        $this->connection = $conn;
+        $this->_connection = $conn;
         return $this;
     }
 
@@ -355,7 +355,7 @@ class Model
      */
     public function getConnection()
     {
-        return $this->connection;
+        return $this->_connection;
     }
 
     /**
@@ -370,7 +370,7 @@ class Model
     {
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
-            $this->resultSet = Adapter::factory($this->connection)
+            $this->resultSet = Adapter::factory($this->_connection)
                     ->prepare($sql);
 
             // Indica el modo de obtener los datos en el ResultSet
@@ -401,13 +401,13 @@ class Model
         self::createQuery();
 
         // Asigna el esquema si existe
-        if ($this->schema) {
-            $dbQuery->schema($this->schema);
+        if ($this->_schema) {
+            $dbQuery->schema($this->_schema);
         }
 
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
-            $this->resultSet = Adapter::factory($this->connection)
+            $this->resultSet = Adapter::factory($this->_connection)
                     ->prepareDbQuery($dbQuery);
 
             // Indica el modo de obtener los datos en el ResultSet
@@ -607,7 +607,7 @@ class Model
             // Convenio patron identidad en activerecord si PK es "id"
             if ($this->metadata()->getPK() === 'id' && (!isset($this->id) || $this->id == '')) {
                 // Obtiene el ultimo id insertado y lo carga en el objeto
-                $this->id = Adapter::factory($this->connection)
+                $this->id = Adapter::factory($this->_connection)
                                 ->pdo()->lastInsertId();
             }
 
@@ -826,7 +826,7 @@ class Model
      */
     public function begin()
     {
-        return Adapter::factory($this->connection)->pdo()->beginTransaction();
+        return Adapter::factory($this->_connection)->pdo()->beginTransaction();
     }
 
     /**
@@ -836,7 +836,7 @@ class Model
      */
     public function rollback()
     {
-        return Adapter::factory($this->connection)->pdo()->rollBack();
+        return Adapter::factory($this->_connection)->pdo()->rollBack();
     }
 
     /**
@@ -846,7 +846,7 @@ class Model
      */
     public function commit()
     {
-        return Adapter::factory($this->connection)->pdo()->commit();
+        return Adapter::factory($this->_connection)->pdo()->commit();
     }
 
     /**
@@ -860,7 +860,7 @@ class Model
     protected function belongsTo($model, $fk)
     {
         $fk || $fk = $model::getTable() . '_id';
-        self::$relations[get_called_class()]['belongsTo'][$model] = $fk;
+        self::$_relations[get_called_class()]['belongsTo'][$model] = $fk;
     }
 
     /**
@@ -874,7 +874,7 @@ class Model
     protected function hasOne($model, $fk = NULL)
     {
         $fk || $fk = static::getTable() . "_id";
-        self::$relations[get_called_class()]['hasOne'][$model] = $fk;
+        self::$_relations[get_called_class()]['hasOne'][$model] = $fk;
     }
 
     /**
@@ -888,7 +888,7 @@ class Model
     protected function hasMany($model, $fk = NULL)
     {
         $fk || $fk = static::getTable() . "_id";
-        self::$relations[get_called_class()]['hasMany'][$model] = $fk;
+        self::$_relations[get_called_class()]['hasMany'][$model] = $fk;
     }
 
     /**
@@ -905,7 +905,7 @@ class Model
     {
         $fk || $fk = $model::getTable() . '_id';
         $key || $key = static::getTable() . '_id';
-        self::$relations[get_called_class()]['hasAndBelongsToMany']
+        self::$_relations[get_called_class()]['hasAndBelongsToMany']
                 [$model] = compact('through', 'fk', 'key');
     }
 
@@ -918,48 +918,48 @@ class Model
      */
     public function get($model)
     {
-        if (!isset(self::$relations[get_called_class()])) {
+        if (!isset(self::$_relations[get_called_class()])) {
             return false;
         }
 
-        if (isset(self::$relations[get_called_class()]['belongsTo']) &&
-                isset(self::$relations[get_called_class()]['belongsTo'][$model])) {
+        if (isset(self::$_relations[get_called_class()]['belongsTo']) &&
+                isset(self::$_relations[get_called_class()]['belongsTo'][$model])) {
 
             if (!isset($this->{$fk})) {
                 return false;
             }
 
-            $fk = self::$relations[get_called_class()]['belongsTo'][$model];
+            $fk = self::$_relations[get_called_class()]['belongsTo'][$model];
 
             return $model::findBy($fk, $this->{$fk});
         }
 
-        if (isset(self::$relations[get_called_class()]['hasOne']) &&
-                isset(self::$relations[get_called_class()]['hasOne'][$model])) {
+        if (isset(self::$_relations[get_called_class()]['hasOne']) &&
+                isset(self::$_relations[get_called_class()]['hasOne'][$model])) {
 
             if (!isset($this->{$fk})) {
                 return false;
             }
 
-            $fk = self::$relations[get_called_class()]['hasOne'][$model];
+            $fk = self::$_relations[get_called_class()]['hasOne'][$model];
 
-            return $model::findBy(self::$metadata[$model]->getPK(), $this->{$fk});
+            return $model::findBy(self::$_metadata[$model]->getPK(), $this->{$fk});
         }
 
-        if (isset(self::$relations[get_called_class()]['hasMany']) &&
-                isset(self::$relations[get_called_class()]['hasMany'][$model])) {
+        if (isset(self::$_relations[get_called_class()]['hasMany']) &&
+                isset(self::$_relations[get_called_class()]['hasMany'][$model])) {
 
             if (!isset($this->{$this->metadata()->getPK()})) {
                 return array();
             }
 
-            $fk = self::$relations[get_called_class()]['hasMany'][$model];
+            $fk = self::$_relations[get_called_class()]['hasMany'][$model];
 
             return $model::findAllBy($fk, $this->{$this->metadata()->getPK()});
         }
 
-        if (isset(self::$relations[get_called_class()]['hasAndBelongsToMany']) &&
-                isset(self::$relations[get_called_class()]['hasAndBelongsToMany'][$model])) {
+        if (isset(self::$_relations[get_called_class()]['hasAndBelongsToMany']) &&
+                isset(self::$_relations[get_called_class()]['hasAndBelongsToMany'][$model])) {
 
             $pk1 = $this->metadata()->getPK();
 
@@ -967,7 +967,7 @@ class Model
                 return array();
             }
 
-            $relation = self::$relations[get_called_class()]['hasAndBelongsToMany'][$model];
+            $relation = self::$_relations[get_called_class()]['hasAndBelongsToMany'][$model];
 
             $instance = new $model();
 
@@ -998,6 +998,17 @@ class Model
     private static function getDbQuery()
     {
         return isset(self::$dbQuery[get_called_class()]) ? self::$dbQuery[get_called_class()] : static::createQuery();
+    }
+
+    public function serialize()
+    {
+        $data = array_intersect_key(get_object_vars($this), $this->metadata()->getAttributes());
+        return serialize($data);
+    }
+
+    public function unserialize($serialized)
+    {
+        $this->__construct(unserialize($serialized));
     }
 
 }
