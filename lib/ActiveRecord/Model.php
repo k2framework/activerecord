@@ -420,7 +420,7 @@ class Model implements \Serializable
             if ($this->resultSet instanceof \PDOStatement) {
                 throw new SqlException($e, $this->resultSet, $dbQuery->getBind());
             } else {
-                throw new ActiveRecordException($e);
+                throw $e->getMessage();
             }
         }
     }
