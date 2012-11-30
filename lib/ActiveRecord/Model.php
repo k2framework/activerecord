@@ -306,8 +306,8 @@ class Model implements \Serializable
         // Asigna la tabla
         $modelName = get_called_class();
         if (!isset(self::$_table[$modelName])) {
-            self::$_table[$modelName] = basename($modelName);
-            self::$_table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", self::$_table[$modelName]));
+            self::$_table[$modelName] = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $modelName));
+            self::$_table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", basename($modelName)));
         }
 
         // Tabla
@@ -417,7 +417,11 @@ class Model implements \Serializable
             $this->resultSet->execute($dbQuery->getBind());
             return $this->resultSet;
         } catch (\PDOException $e) {
-            throw new SqlException($e, $this->resultSet, $dbQuery->getBind());
+            if ($this->resultSet instanceof \PDOStatement) {
+                throw new SqlException($e, $this->resultSet, $dbQuery->getBind());
+            } else {
+                throw new ActiveRecordException($e);
+            }
         }
     }
 
