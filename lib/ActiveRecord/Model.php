@@ -306,11 +306,9 @@ class Model implements \Serializable
         // Asigna la tabla
         $modelName = get_called_class();
         if (!isset(self::$_table[$modelName])) {
-            self::$_table[$modelName] = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $modelName));
-            self::$_table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", basename($modelName)));
+            $tableName = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $modelName));
+            self::$_table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", $tableName));
         }
-
-        // Tabla
         return self::$_table[$modelName];
     }
 
