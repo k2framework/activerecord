@@ -418,7 +418,7 @@ class Model implements \Serializable
             if ($this->resultSet instanceof \PDOStatement) {
                 throw new SqlException($e, $this->resultSet, $dbQuery->getBind());
             } else {
-                throw $e->getMessage();
+                throw $e;
             }
         }
     }
