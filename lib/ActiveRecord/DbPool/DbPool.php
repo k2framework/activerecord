@@ -26,6 +26,7 @@ namespace ActiveRecord\DbPool;
 use \PDO;
 use ActiveRecord\Config\Config;
 use ActiveRecord\Config\Parameters;
+use ActiveRecord\Exception\ActiveRecordException;
 
 /**
  * \ActiveRecord\DbPool
@@ -66,8 +67,10 @@ class DbPool
 
         // check for PDO extension
         if (!extension_loaded('pdo')) {
-            throw new KumbiaException('La extensión PDO es requerida por este adaptador, pero la extensión no esta cargada');
-        }
+            throw new ActiveRecordException('La extensión PDO es requerida por este adaptador, pero la extensión no esta cargada');
+        }/*elseif(!extension_loaded("pdo_{$config->getType()}")){
+            throw new ActiveRecordException("La extensión pdo_{$config->getType()} es requerida por este adaptador, pero la extensión no esta cargada");            
+        }*/
 
         try {
             // conecta con pdo
