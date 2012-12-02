@@ -75,7 +75,7 @@ class Model implements \Serializable
      *
      * @var string
      */
-    protected static $table = NULL;
+    protected $table = NULL;
 
     /**
      * Esquema de datos
@@ -293,9 +293,9 @@ class Model implements \Serializable
      *
      * @param string $table
      */
-    public static function setTable($table)
+    public function setTable($table)
     {
-        self::$table[get_called_class()] = $table;
+        $this->table = $table;
     }
 
     /**
@@ -303,15 +303,12 @@ class Model implements \Serializable
      *
      * @return string
      */
-    public static function getTable()
+    public function getTable()
     {
-        // Asigna la tabla
-        $modelName = get_called_class();
-        if (!isset(self::$table[$modelName])) {
-            $tableName = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $modelName));
-            self::$table[$modelName] = strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", $tableName));
+        if (!isset($this->table)) {
+            $this->table = $this->createTableName(get_class($this));
         }
-        return self::$table[$modelName];
+        return $this->table;
     }
 
     /**
@@ -396,7 +393,7 @@ class Model implements \Serializable
      */
     public function query($dbQuery, $fetchMode = NULL)
     {
-        $dbQuery->table(static::getTable());
+        $dbQuery->table($this->getTable());
 
         self::createQuery();
 
@@ -863,7 +860,7 @@ class Model implements \Serializable
      */
     protected function belongsTo($model, $fk)
     {
-        $fk || $fk = $model::getTable() . '_id';
+        $fk || $fk = $this->createTableName($model) . '_id';
         self::$relations[get_called_class()]['belongsTo'][$model] = $fk;
     }
 
@@ -877,7 +874,7 @@ class Model implements \Serializable
      */
     protected function hasOne($model, $fk = NULL)
     {
-        $fk || $fk = static::getTable() . "_id";
+        $fk || $fk = $this->getTable() . "_id";
         self::$relations[get_called_class()]['hasOne'][$model] = $fk;
     }
 
@@ -891,7 +888,7 @@ class Model implements \Serializable
      */
     protected function hasMany($model, $fk = NULL)
     {
-        $fk || $fk = static::getTable() . "_id";
+        $fk || $fk = $this->getTable() . "_id";
         self::$relations[get_called_class()]['hasMany'][$model] = $fk;
     }
 
@@ -907,8 +904,8 @@ class Model implements \Serializable
      */
     protected function hasAndBelongsToMany($model, $through, $fk = NULL, $key = NULL)
     {
-        $fk || $fk = $model::getTable() . '_id';
-        $key || $key = static::getTable() . '_id';
+        $fk || $fk = $this->createTableName($model) . '_id';
+        $key || $key = $this->getTable() . '_id';
         self::$relations[get_called_class()]['hasAndBelongsToMany']
                 [$model] = compact('through', 'fk', 'key');
     }
@@ -978,9 +975,9 @@ class Model implements \Serializable
             $fk = $relation['fk'];
             $key = $relation['key'];
             $pk2 = $instance->metadata()->getPK();
-            $thisTable = static::getTable();
-            $modelTable = $model::getTable();
-            $through = $relation['through']::getTable();
+            $thisTable = $this->getTable();
+            $modelTable = $this->createTableName($model);
+            $through = $this->createTableName($relation['through']);
 
             $model::createQuery()
                     ->select("$modelTable.*")
@@ -1002,6 +999,12 @@ class Model implements \Serializable
     private static function getDbQuery()
     {
         return isset(self::$dbQuery[get_called_class()]) ? self::$dbQuery[get_called_class()] : static::createQuery();
+    }
+
+    private function createTableName($className)
+    {
+        $className = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $className));
+        return strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", $className));
     }
 
     public function serialize()
