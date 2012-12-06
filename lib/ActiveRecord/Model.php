@@ -68,35 +68,35 @@ class Model implements \Serializable
      *
      * @var strings
      */
-    protected $connection = NULL;
+    protected $connection = null;
 
     /**
      * Tabla origen de datos
      *
      * @var string
      */
-    protected $table = NULL;
+    protected $table = null;
 
     /**
      * Esquema de datos
      *
      * @var string
      */
-    protected $schema = NULL;
+    protected $schema = null;
 
     /**
      * Objeto DbQuery para implementar chain
      *
      * @var Obj
      */
-    private static $dbQuery = NULL;
+    private static $dbQuery = null;
 
     /**
      * ResulSet PDOStatement
      *
      * @var \PDOStatement
      */
-    protected $resultSet = NULL;
+    protected $statemet = null;
 
     /**
      * Modo de obtener datos
@@ -123,7 +123,7 @@ class Model implements \Serializable
      *
      * @param array $data
      */
-    public final function __construct($data = NULL)
+    public final function __construct($data = null)
     {
         if (is_array($data)) {
             $this->dump($data);
@@ -166,18 +166,28 @@ class Model implements \Serializable
         }
     }
 
+    /**
+     * Método que se puede sobreescribir para hacer configuraciónes en el modelo,
+     * Este método será llamado por el constructor de la clase. 
+     */
     protected function initialize()
     {
         
     }
 
+    /**
+     * Este método es llamado por el constructor despues de llamar al método
+     * initialize, la diferencia de este método con initialize es que solo es
+     * llamado 1 vez en la petición, para cargar las validaciones de todas
+     * las instancias para un modelo especifico. 
+     */
     protected function createRelations()
     {
         
     }
 
     /**
-     * Callback antes de crear
+     * Método que será ejecutado antes de hacer un INSERT en la BD
      *
      * @return boolean
      */
@@ -187,7 +197,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Callback despues de crear
+     * Método que será ejecutado despues de hacer un INSERT en la BD
      *
      * @return boolean
      */
@@ -197,7 +207,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Callback antes de actualizar
+     * Método que será ejecutado antes de hacer un UPDATE de un registro en la BD
      *
      * @return boolean
      */
@@ -207,7 +217,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Callback antes de guardar
+     * Método que será ejecutado antes de hacer un INSERT ó UPDATE en la BD
      *
      * @return boolean
      */
@@ -227,7 +237,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Callback despues de actualizar
+     * Método que será ejecutado despues de hacer un UPDATE en la BD
      *
      * @return boolean
      */
@@ -237,7 +247,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Callback despues de guardar
+     * Método que será ejecutado despues de hacer un INSERT ó UPDATE en la BD
      *
      * @return boolean
      */
@@ -247,49 +257,45 @@ class Model implements \Serializable
     }
 
     /**
-     * Modo de obtener datos
-     *
-     * @param integer $mode
-     * @return ActiveRecord
+     * Indica/Obtiene el fetchModel a usar para una consulta.
+     * Si se pasa el parametro para el fetchMode, se establece en el modelo.
+     * si no se pasa nada ó null, se obtiene el fetchModel actual.
+     * @param string $fetchMode modalidad de devolución de los registros
+     * en una consulta, los parametros posibles son:
+     * array: devuelve una matriz con los datos de la consulta
+     * obj: devuelve un arreglo con objetos de tipo stdClass
+     * model: devuelve un arreglo con objetos del tipo de la clase que hace el find.
      */
-    public function setFetchMode($mode)
-    {
-        $this->fetchMode = $mode;
-        return $this;
-    }
-
-    /**
-     * Indica el modo de obtener datos al ResultSet actual
-     *
-     */
-    protected function fetchMode($fetchMode = NULL)
+    protected function fetchMode($fetchMode = null)
     {
         // Si no se especifica toma el por defecto
         if (!$fetchMode) {
             $fetchMode = $this->fetchMode;
         }
 
-        switch ($fetchMode) {
-            // Obtener arrays
-            case self::FETCH_ARRAY:
-                $this->resultSet->setFetchMode(PDO::FETCH_ASSOC);
-                break;
+        if ($this->statemet instanceof \PDOStatement) {
+            switch ($fetchMode) {
+                // Obtener arrays
+                case self::FETCH_ARRAY:
+                    $this->statemet->setFetchMode(PDO::FETCH_ASSOC);
+                    break;
 
-            // Obtener instancias de objetos simples
-            case self::FETCH_OBJ:
-                $this->resultSet->setFetchMode(PDO::FETCH_OBJ);
-                break;
+                // Obtener instancias de objetos simples
+                case self::FETCH_OBJ:
+                    $this->statemet->setFetchMode(PDO::FETCH_OBJ);
+                    break;
 
-            // Obtener instancias del mismo modelo
-            case self::FETCH_MODEL:
-            default:
-                // Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
-                $this->resultSet->setFetchMode(PDO::FETCH_CLASS, get_called_class());
+                // Obtener instancias del mismo modelo
+                case self::FETCH_MODEL:
+                default:
+                    // Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
+                    $this->statemet->setFetchMode(PDO::FETCH_CLASS, get_called_class());
+            }
         }
     }
 
     /**
-     * Asigna la tabla fuente de datos
+     * Asigna el nombre de la tabla que el modelo está representando.
      *
      * @param string $table
      */
@@ -299,7 +305,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Obtiene la tabla fuente de datos
+     * Obtiene el nombre de la tabla que el modelo está representando.
      *
      * @return string
      */
@@ -312,7 +318,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Asigna el schema
+     * Asigna el esquema para la tabla
      *
      * @param string $schema
      * @return ActiveRecord
@@ -324,7 +330,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Obtiene el schema
+     * Obtiene el esquema
      *
      * @return string
      */
@@ -334,7 +340,10 @@ class Model implements \Serializable
     }
 
     /**
-     * Asigna la conexion
+     * Asigna la el nombre de la conexión a usar por el modelo.
+     * 
+     * El nombre debe ser el identificador de alguna de las configuraciones
+     * de la clase ActiveRecord\Config\Config
      *
      * @param string $conn
      * @return ActiveRecord
@@ -346,7 +355,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Obtiene la conexión
+     * Obtiene el nombre de la conexión utilizada por el modelo
      *
      * @return string
      */
@@ -361,27 +370,28 @@ class Model implements \Serializable
      * @param string $sql Setencia SQL
      * @param array $params parámetros que seran enlazados al SQL
      * @param string $fetchMode
-     * @return ActiveRecord
+     * @return \PDOStatement
      */
-    public function sql($sql, $params = NULL, $fetchMode = NULL)
+    public function sql($sql, $params = null, $fetchMode = null)
     {
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
-            $this->resultSet = Adapter::factory($this->connection)
+            $this->statemet = Adapter::factory($this->connection)
                     ->prepare($sql);
 
             // Indica el modo de obtener los datos en el ResultSet
             $this->fetchMode($fetchMode);
 
             // Ejecuta la consulta
-            $this->resultSet->execute($params);
-            return $this;
-        } catch (PDOException $e) {
-            // Aqui debemos ir a cada adapter y verificar el código de error SQLSTATE
-            echo $this->resultSet->errorCode();
+            $this->statemet->execute($params);
+            return $this->statemet;
+        } catch (\PDOException $e) {
+            if ($this->statemet instanceof \PDOStatement) {
+                throw new SqlException($e, $this->statemet, $dbQuery->getBind());
+            } else {
+                throw $e;
+            }
         }
-
-        return false;
     }
 
     /**
@@ -391,7 +401,7 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return \PDOStatement
      */
-    public function query($dbQuery, $fetchMode = NULL)
+    public function query($dbQuery, $fetchMode = null)
     {
         $dbQuery->table($this->getTable());
 
@@ -404,18 +414,18 @@ class Model implements \Serializable
 
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
-            $this->resultSet = Adapter::factory($this->connection)
+            $this->statemet = Adapter::factory($this->connection)
                     ->prepareDbQuery($dbQuery);
 
             // Indica el modo de obtener los datos en el ResultSet
             $this->fetchMode($fetchMode);
 
             // Ejecuta la consulta
-            $this->resultSet->execute($dbQuery->getBind());
-            return $this->resultSet;
+            $this->statemet->execute($dbQuery->getBind());
+            return $this->statemet;
         } catch (\PDOException $e) {
-            if ($this->resultSet instanceof \PDOStatement) {
-                throw new SqlException($e, $this->resultSet, $dbQuery->getBind());
+            if ($this->statemet instanceof \PDOStatement) {
+                throw new SqlException($e, $this->statemet, $dbQuery->getBind());
             } else {
                 throw $e;
             }
@@ -423,7 +433,8 @@ class Model implements \Serializable
     }
 
     /**
-     * Devuelve la instancia para realizar chain
+     * Crea y devuelve una instancia de la clase DbQuery, la cual nos permite
+     * crear consultas de manera orientada a objetos.
      *
      * @return DbQuery
      */
@@ -434,36 +445,37 @@ class Model implements \Serializable
     }
 
     /**
-     * Efectua una búsqueda
+     * Efectua una consulta SELECT y devuelve el primer registro encontrado.
      *
      * @param string $fetchMode
      * @return Model
      */
-    public static function find($fetchMode = NULL)
+    public static function find($fetchMode = null)
     {
         $model = new static();
         return $model->query(self::getDbQuery()->select(), $fetchMode)->fetch();
     }
 
     /**
-     * Obtiene un array con los items resultantes de la búsqueda
+     * Efectua una consulta SELECT y devuelve un arreglo con los registros devueltos.
      *
      * @param string $fetchMode
      * @return array
      */
-    public static function findAll($fetchMode = NULL)
+    public static function findAll($fetchMode = null)
     {
         $model = new static();
         return $model->query(self::getDbQuery()->select(), $fetchMode)->fetchAll();
     }
 
     /**
-     * Obtiene el primer elemento de la busqueda
+     * Efectua una consulta SELECT y con limit 1 y offser 0 para obtener siempre
+     * un solo registro.
      *
      * @param string $fetchMode
      * @return ActiveRecord
      */
-    public static function first($fetchMode = NULL)
+    public static function first($fetchMode = null)
     {
         $model = new static();
         // Realiza la busqueda y retorna el objeto ActiveRecord
@@ -482,7 +494,7 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return ActiveRecord
      */
-    public static function findBy($column, $value, $fetchMode = NULL)
+    public static function findBy($column, $value, $fetchMode = null)
     {
         self::createQuery()
                 ->where("$column = :value")
@@ -498,7 +510,7 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return ActiveRecord
      */
-    public static function findAllBy($column, $value, $fetchMode = NULL)
+    public static function findAllBy($column, $value, $fetchMode = null)
     {
         if (is_array($value)) {
             $query = self::createQuery();
@@ -523,10 +535,8 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return Model
      */
-    public static function findByPK($value, $fetchMode = NULL)
+    public static function findByPK($value, $fetchMode = null)
     {
-        $model = new static();
-
         $model = new static();
 
         $pk = $model->metadata()->getPK();
@@ -537,6 +547,18 @@ class Model implements \Serializable
                 ->bindValue('pk', $value);
         // Realiza la busqueda y retorna el objeto ActiveRecord
         return $model->query($query, $fetchMode)->fetch();
+    }
+
+    /**
+     * Buscar por medio del id
+     *
+     * @param string $value
+     * @param int $id
+     * @return Model
+     */
+    public static function findByID($id, $fetchMode = null)
+    {
+        return self::findByPK((int) $id, $fetchMode);
     }
 
     /**
@@ -555,14 +577,14 @@ class Model implements \Serializable
             if (property_exists($this, $fieldName)) {
                 if ($this->$fieldName === '') {
                     if (!$attr->default) {
-                        $data[$fieldName] = NULL;
+                        $data[$fieldName] = null;
                     }
                 } else {
                     $data[$fieldName] = $this->$fieldName;
                 }
             } else {
                 if (!$attr->default) {
-                    $data[$fieldName] = NULL;
+                    $data[$fieldName] = null;
                 }
             }
         }
@@ -574,9 +596,9 @@ class Model implements \Serializable
      * Realiza un insert sobre la tabla
      *
      * @param array $data información a ser guardada
-     * @return ActiveRecord
+     * @return boolean
      */
-    public function create($data = NULL)
+    public function create($data = null)
     {
         // Si es un array, se cargan los atributos en el objeto
         if (is_array($data)) {
@@ -606,16 +628,16 @@ class Model implements \Serializable
         if ($this->query($dbQuery->insert($data))) {
 
             // Convenio patron identidad en activerecord si PK es "id"
-            if ($this->metadata()->getPK() === 'id' && (!isset($this->id) || $this->id == '')) {
+            if (is_string($pk = $this->metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
                 // Obtiene el ultimo id insertado y lo carga en el objeto
-                $this->id = Adapter::factory($this->connection)
+                $this->$pk = Adapter::factory($this->connection)
                                 ->pdo()->lastInsertId();
             }
 
             // Callback despues de crear
             $this->afterCreate();
             $this->afterSave();
-            return $this;
+            return true;
         }
 
         return false;
@@ -624,22 +646,46 @@ class Model implements \Serializable
     /**
      * Realiza un update sobre la tabla
      *
-     * @param array $data información a ser guardada
-     * @return int
+     * @param DbQuery $query objeto con la data a guardar y las condiciones establecidas
+     * 
+     * @example 
+     * 
+     * $query = new DbQuery();
+     * 
+     * $query->update(array('active' => true))->where('role = :r')
+     * ->bindValue('r', 'admin');
+     * 
+     * Usuarios::updateAll($query);
+     * 
+     * ejecuta: UPDATE usuarios SET active=1 WHERE role = 'admin'
+     * 
+     * @return int 
      */
-    public static function updateAll($data)
+    public static function updateAll(DbQuery $query)
     {
         $model = new static();
         // Ejecuta la consulta
-        return $model->query(self::getDbQuery()->update($data))->rowCount();
+        return $model->query($query->update($data))->rowCount();
     }
 
     /**
      * Realiza un delete sobre la tabla
      *
+     * @param DbQuery $query objeto con la data a guardar y las condiciones establecidas
+     * 
+     * @example 
+     * 
+     * $query = new DbQuery();
+     * 
+     * $query->where('role = :r')->bindValue('r', 'admin');
+     * 
+     * Usuarios::updateAll($query);
+     * 
+     * ejecuta: DELETE FROM usuarios WHERE role = 'admin'
+     * 
      * @return int
      */
-    public static function deleteAll()
+    public static function deleteAll(DbQuery $query)
     {
         $model = new static();
         // Ejecuta la consulta
@@ -647,7 +693,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Cuenta las apariciones de filas
+     * Cuenta el numero de registros devueltos en una consulta de tipo SELECT
      *
      * @param string $column
      * @return integer
@@ -673,7 +719,7 @@ class Model implements \Serializable
      *
      * @param DbQuery $dbQuery
      */
-    protected function wherePK($dbQuery)
+    protected function wherePK(DbQuery $dbQuery)
     {
         // Obtiene la clave primaria
         $pk = $this->metadata()->getPK();
@@ -713,9 +759,9 @@ class Model implements \Serializable
      * Realiza un update del registro sobre la tabla
      *
      * @param array $data información a ser guardada
-     * @return Bool
+     * @return boolean
      */
-    public function update($data = NULL)
+    public function update($data = null)
     {
         // Si es un array, se cargan los atributos en el objeto
         if (is_array($data)) {
@@ -747,16 +793,16 @@ class Model implements \Serializable
             // Callback despues de actualizar
             $this->afterUpdate();
             $this->afterSave();
-            return $this;
+            return true;
         }
 
         return false;
     }
 
     /**
-     * Elimina el registro correspondiente al objeto
+     * Elimina al objeto de la BD
      *
-     * @return Bool
+     * @return boolean
      */
     public function delete()
     {
@@ -767,7 +813,7 @@ class Model implements \Serializable
 
         // Ejecuta la consulta con el query utilizado para el exists
         if ($this->query($dbQuery->delete())) {
-            return $this;
+            return true;
         }
 
         return false;
@@ -800,15 +846,78 @@ class Model implements \Serializable
         return false;
     }
 
-    public static function paginate($page, $per_page = 10, $fetchMode = NULL)
+    /**
+     * Elimina el registro por medio del id
+     *
+     * @param int $id
+     * @return boolean
+     */
+    public static function deleteByID($id)
+    {
+        return self::deleteByPK((int) $id);
+    }
+
+    /**
+     * Realiza una consulta SELECT y devuelve los resultados paginados.
+     * @param int $page numero página a devolver
+     * @param int $per_page registros por página
+     * @param string $fetchMode como serán devueltos los registros (array, model, obj)
+     * @return array 
+     */
+    public static function paginate($page, $per_page = 10, $fetchMode = null)
     {
         $model = new static();
 
-        $model->setFetchMode($fetchMode);
+        $model->fetchMode($fetchMode);
 
         return Paginator::paginate($model, self::getDbQuery(), $page, $per_page);
     }
 
+    /**
+     * Ejecuta la función pasada como parametro y las consultas ejecutadas dentro de
+     * dicha función se haran dentro de una transacción.
+     * 
+     * @example 
+     * 
+     * $usr = new Usuarios(array('nombre' => "Manuel", 'apellido' => "Aguirre"));
+     * 
+     * if($usr->transaction(function($model){
+     *      $model->active = 1;
+     *      return $model->save();
+     * })){ 
+     *      //se realizó bien 
+     * }else{
+     *      //error
+     * }
+     * 
+     * En el ejemplo la función que se creó realiza el save dentro de una transacción.
+     * 
+     * @param \Closure $function función a ser ejecutada, la misma recibe la instancia
+     * del objeto al que está haciendi la transacción.
+     * @return boolean devuelve verdadero si la transacción fué exitosa.
+     * @throws Exception si ocurre una excepción hace un rollback y devuelve el error.
+     */
+    public function transaction(\Closure $function)
+    {
+        $this->begin();
+        try {
+            if (false === $function($this)) {
+                $this->rollback();
+                return false;
+            }
+            $this->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * Realiza un INSERT ó UPDATE dependiendo de si el objeto está ya persistido en la BD
+     * @param array $data
+     * @return boolean 
+     */
     public function save(array $data = array())
     {
         if (count($data)) {
@@ -874,7 +983,7 @@ class Model implements \Serializable
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foránea)
      */
-    protected function hasOne($model, $fk = NULL)
+    protected function hasOne($model, $fk = null)
     {
         $fk || $fk = $this->getTable() . "_id";
         self::$relations[get_called_class()]['hasOne'][$model] = $fk;
@@ -888,7 +997,7 @@ class Model implements \Serializable
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foránea)
      */
-    protected function hasMany($model, $fk = NULL)
+    protected function hasMany($model, $fk = null)
     {
         $fk || $fk = $this->getTable() . "_id";
         self::$relations[get_called_class()]['hasMany'][$model] = $fk;
@@ -904,7 +1013,7 @@ class Model implements \Serializable
      * key: campo llave que identifica al propio modelo
      * through : através de que tabla
      */
-    protected function hasAndBelongsToMany($model, $through, $fk = NULL, $key = NULL)
+    protected function hasAndBelongsToMany($model, $through, $fk = null, $key = null)
     {
         $fk || $fk = $this->createTableName($model) . '_id';
         $key || $key = $this->getTable() . '_id';
@@ -916,8 +1025,8 @@ class Model implements \Serializable
      * Devuelve los registros del modelo al que se está asociado.
      *
      * @param string $model nombre del modelo asociado
-     * @return array|NULL|false si existen datos devolverá un array,
-     * NULL si no hay datos asociados aun, y false si no existe ninguna asociación.
+     * @return array|null|false si existen datos devolverá un array,
+     * null si no hay datos asociados aun, y false si no existe ninguna asociación.
      */
     public function get($model)
     {
@@ -995,7 +1104,7 @@ class Model implements \Serializable
     }
 
     /**
-     *
+     * Devuelve la instancia del DbQuery asociado a un modelo si existe, si no lo crea y lo devuelve.
      * @return DbQuery
      */
     private static function getDbQuery()
@@ -1003,18 +1112,35 @@ class Model implements \Serializable
         return isset(self::$dbQuery[get_called_class()]) ? self::$dbQuery[get_called_class()] : static::createQuery();
     }
 
+    /**
+     * Crea el nombre de la tabla a partir de la clase que hace de Modelo
+     * @param string $className nombre de la clase.
+     * @return string 
+     */
     private function createTableName($className)
     {
         $className = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $className));
         return strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", $className));
     }
 
+    /**
+     * Método llamado al serializar un objeto ActiveRecord
+     * 
+     * serializa solo la data que representa los campos de la tabla.
+     * 
+     * @return string 
+     */
     public function serialize()
     {
         $data = array_intersect_key(get_object_vars($this), $this->metadata()->getAttributes());
         return serialize($data);
     }
 
+    /**
+     * Revierte la serialización de un objeto y llama al constructor del mismo
+     * para inicializar dicho objeto de manera correcta.
+     * @param string $serialized 
+     */
     public function unserialize($serialized)
     {
         $this->__construct(unserialize($serialized));
