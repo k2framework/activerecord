@@ -777,22 +777,24 @@ class Model implements \Serializable
      * Elimina el registro por medio de la clave primaria
      *
      * @param string $value
-     * @return Bool
+     * @return boolean
      */
-    public function deleteByPK($value)
+    public static function deleteByPK($value)
     {
+        //creo el objeto:
+        $model = new static();
         // Objeto de consulta
         $dbQuery = new DbQuery();
 
         // Obtiene la clave primeria
-        $pk = $this->metadata()->getPK();
+        $pk = $model->metadata()->getPK();
 
         // Establece la condicion
         $dbQuery->where("$pk = :pk_$pk")->bindValue("pk_$pk", $value);
 
         // Ejecuta la consulta con el query utilizado para el exists
-        if ($this->query($dbQuery->delete())) {
-            return $this;
+        if ($model->query($dbQuery->delete())) {
+            return true;
         }
 
         return false;
