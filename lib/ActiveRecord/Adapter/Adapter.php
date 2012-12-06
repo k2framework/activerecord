@@ -1,5 +1,4 @@
 <?php
-
 /**
  * KumbiaPHP web & app Framework
  *
@@ -29,6 +28,8 @@ use ActiveRecord\Config\Config;
 use ActiveRecord\DbPool\DbPool;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Config\Parameters;
+use KumbiaPHP\EventDispatcher\EventDispatcher;
+use KumbiaPHP\EventDispatcher\EventDispatcherInterface;
 
 /**
  * \ActiveRecord\Adapter\Adapter
@@ -44,6 +45,12 @@ abstract class Adapter
      * @var array
      */
     private static $adapters = array();
+
+    /**
+     * Despachador de eventos del ActiveRecord
+     * @var EventDispatcherInterface
+     */
+    private static $eventDispatcher;
 
     /**
      * Nombre de conexión
@@ -348,6 +355,27 @@ abstract class Adapter
         $statement->execute($query->getBind());
 
         return $statement;
+    }
+
+    /**
+     * Establece el despachador de eventos a usar el en ActiveRecord
+     * @param EventDispatcherInterface $ed 
+     */
+    public static function setEventDispatcher(EventDispatcherInterface $ed)
+    {
+        self::$eventDispatcher = $ev;
+    }
+
+    /**
+     * Devuelve la instancia del despachador de eventos usado actualmente.
+     * @return EventDispatcherInterface
+     */
+    public static function getEventDispatcher()
+    {
+        if (!self::$eventDispatcher) {
+            self::$eventDispatcher = new EventDispatcher();
+        }
+        return self::$eventDispatcher;
     }
 
 }

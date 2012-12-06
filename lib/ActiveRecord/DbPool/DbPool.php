@@ -1,5 +1,4 @@
 <?php
-
 /**
  * KumbiaPHP web & app Framework
  *
@@ -68,9 +67,9 @@ class DbPool
         // check for PDO extension
         if (!extension_loaded('pdo')) {
             throw new ActiveRecordException('La extensión PDO es requerida por este adaptador, pero la extensión no esta cargada');
-        }/*elseif(!extension_loaded("pdo_{$config->getType()}")){
-            throw new ActiveRecordException("La extensión pdo_{$config->getType()} es requerida por este adaptador, pero la extensión no esta cargada");            
-        }*/
+        }/* elseif(!extension_loaded("pdo_{$config->getType()}")){
+          throw new ActiveRecordException("La extensión pdo_{$config->getType()} es requerida por este adaptador, pero la extensión no esta cargada");
+          } */
 
         try {
             // conecta con pdo
@@ -104,3 +103,7 @@ class DbPool
     }
 
 }
+
+\ActiveRecord\DbPool\DbPool::setAttributes(array(
+    \PDO::ATTR_STATEMENT_CLASS => array('ActiveRecord\\PDOStatement')
+));

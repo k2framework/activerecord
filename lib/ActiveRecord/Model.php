@@ -23,6 +23,7 @@
 namespace ActiveRecord;
 
 use \PDO;
+use ActiveRecord\Event\Events;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Adapter\Adapter;
 use ActiveRecord\Metadata\Metadata;
@@ -131,6 +132,11 @@ class Model implements \Serializable
         $this->initialize();
         if (!isset(self::$relations[get_called_class()])) {
             $this->createRelations();
+            //si el método no crea ninguna relación, le pasamos un arreglo vacio 
+            //para que no se vuelva a llamar a createRelations en la creacion
+            //de otras instancias de la misma clase
+            isset(self::$relations[get_called_class()]) ||
+                    self::$relations[get_called_class()] = array();
         }
     }
 
@@ -477,13 +483,10 @@ class Model implements \Serializable
      */
     public static function first($fetchMode = null)
     {
-        $model = new static();
-        // Realiza la busqueda y retorna el objeto ActiveRecord
-        $query = self::getDbQuery()
-                ->select()
+        self::getDbQuery()
                 ->limit(1)
                 ->offset(0);
-        return $model->query($query, $fetchMode)->fetch();
+        return self::find($fetchMode);
     }
 
     /**
@@ -624,6 +627,10 @@ class Model implements \Serializable
             unset($data[$this->metadata()->getPK()]);
         }
 
+        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_CREATE)) {
+            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_CREATE);
+        }
+
         // Ejecuta la consulta
         if ($this->query($dbQuery->insert($data))) {
 
@@ -632,6 +639,10 @@ class Model implements \Serializable
                 // Obtiene el ultimo id insertado y lo carga en el objeto
                 $this->$pk = Adapter::factory($this->connection)
                                 ->pdo()->lastInsertId();
+            }
+
+            if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_CREATE)) {
+                Adapter::getEventDispatcher()->dispatch(Events::AFTER_CREATE);
             }
 
             // Callback despues de crear
@@ -788,8 +799,17 @@ class Model implements \Serializable
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
 
+        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_UPDATE)) {
+            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_UPDATE);
+        }
+
         // Ejecuta la consulta con el query utilizado para el exists
         if ($this->query($dbQuery->update($this->getTableValues()))) {
+
+            if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_UPDATE)) {
+                Adapter::getEventDispatcher()->dispatch(Events::AFTER_UPDATE);
+            }
+
             // Callback despues de actualizar
             $this->afterUpdate();
             $this->afterSave();
@@ -811,8 +831,14 @@ class Model implements \Serializable
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
 
+        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_DELETE)) {
+            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_DELETE);
+        }
         // Ejecuta la consulta con el query utilizado para el exists
         if ($this->query($dbQuery->delete())) {
+            if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_DELETE)) {
+                Adapter::getEventDispatcher()->dispatch(Events::AFTER_DELETE);
+            }
             return true;
         }
 
@@ -828,18 +854,10 @@ class Model implements \Serializable
     public static function deleteByPK($value)
     {
         //creo el objeto:
-        $model = new static();
-        // Objeto de consulta
-        $dbQuery = new DbQuery();
-
-        // Obtiene la clave primeria
-        $pk = $model->metadata()->getPK();
-
-        // Establece la condicion
-        $dbQuery->where("$pk = :pk_$pk")->bindValue("pk_$pk", $value);
+        $model = static::findByPK($value);
 
         // Ejecuta la consulta con el query utilizado para el exists
-        if ($model->query($dbQuery->delete())) {
+        if ($model->delete()) {
             return true;
         }
 
@@ -924,7 +942,7 @@ class Model implements \Serializable
             $this->dump($data);
         }
 
-        if (isset($this->{$this->metadata()->getPK()}) && $this->exists()) {
+        if (is_string($pk = $this->metadata()->getPK()) && isset($this->$pk) && $this->exists()) {
             return $this->update();
         } else {
             return $this->create();
