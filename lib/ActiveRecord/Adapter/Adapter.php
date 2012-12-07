@@ -363,7 +363,7 @@ abstract class Adapter
      */
     public static function setEventDispatcher(EventDispatcherInterface $ed)
     {
-        self::$eventDispatcher = $ev;
+        self::$eventDispatcher = $ed;
     }
 
     /**

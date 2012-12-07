@@ -469,14 +469,14 @@ class Model implements \Serializable
         $dbQuery = self::getDbQuery()->select();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent($this, $dbQuery);
+            $event = new SelectEvent($model, $dbQuery);
             Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
         }
 
         $result = $model->query($dbQuery, $fetchMode)->fetch();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-            $event = new SelectEvent($this, $dbQuery, $result, true);
+            $event = new SelectEvent($model, $dbQuery, $result, true);
             Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
         }
 
@@ -496,14 +496,14 @@ class Model implements \Serializable
         $dbQuery = self::getDbQuery()->select();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent($this, $dbQuery);
+            $event = new SelectEvent($model, $dbQuery);
             Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
         }
 
         $result = $model->query($dbQuery, $fetchMode)->fetchAll();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-            $event = new SelectEvent($this, $dbQuery, $result, true);
+            $event = new SelectEvent($model, $dbQuery, $result, true);
             Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
         }
 
@@ -570,7 +570,7 @@ class Model implements \Serializable
                 ->where("$pk = :pk")
                 ->bindValue('pk', $value);
         // Realiza la busqueda y retorna el objeto ActiveRecord
-        return $model->query($query, $fetchMode)->fetch();
+        return self::find($fetchMode);
     }
 
     /**
@@ -823,6 +823,8 @@ class Model implements \Serializable
         $dbQuery = new DbQuery();
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
+        
+        $data = $this->getTableValues();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_UPDATE)) {
             $event = new CreateOrUpdateEvent($this, $data);
@@ -830,7 +832,7 @@ class Model implements \Serializable
         }
 
         // Ejecuta la consulta con el query utilizado para el exists
-        if ($this->query($dbQuery->update($this->getTableValues()))) {
+        if ($this->query($dbQuery->update($data))) {
 
             if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_UPDATE)) {
                 $event = new CreateOrUpdateEvent($this, $data);
