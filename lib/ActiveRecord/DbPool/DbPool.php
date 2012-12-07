@@ -103,7 +103,3 @@ class DbPool
     }
 
 }
-
-\ActiveRecord\DbPool\DbPool::setAttributes(array(
-    \PDO::ATTR_STATEMENT_CLASS => array('ActiveRecord\\PDOStatement')
-));
