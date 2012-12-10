@@ -1,12 +1,12 @@
 ActiveRecord 2 [![Build Status](https://secure.travis-ci.org/manuelj555/activerecord.png?branch=php5.3)](https://travis-ci.org/manuelj555/activerecord)
 ==============
 
-Nuevo Active Record para la nueva versión de KumbiaPHP que trabaja con PHP 5.3 ó superior, trabaja con PDO.
+Active Record para KumbiaPHP versión K2, trabaja con PHP 5.3 ó superior y requiere PDO.
 
 Aunque es una librería realizada con la finalidad de ofrecer una capa de abstracción a base de datos para el
-framework KumbiaPHP, esta nueva versión puede ser usada en cualquier proyecto PHP.
+framework KumbiaPHP, esta versión puede ser usada en cualquier proyecto PHP.
 
-Actualmente no tiene su propio autoloader, por lo que para usarlo se debe registrar la ruta hacia lib en
+Actualmente no tiene su propio autoloader, por lo que para usarlo se debe registrar la ruta hacia la lib en
 cualquier autoloader que cumpla las especificaciones PSR-0.
 
 Configuración
