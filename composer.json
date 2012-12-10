@@ -1,6 +1,15 @@
 {
     "name": "kumbiaphp/activerecord",
     "type": "library",
+    "description": "Active Record para KumbiaPHP versión K2, trabaja con PHP 5.3 ó superior y requiere PDO.",
+    "license": "BSD",
+    "keywords": ["framework"],
+    "authors": [
+        {
+            "name": "Manuel Aguirre",
+            "email": "programador.manuel@gmail.com"
+        }
+    ],
     "require":{
         "kumbiaphp/event-dispatcher": "dev-master",
         "kumbiaphp/dependency-injection": "dev-master"
