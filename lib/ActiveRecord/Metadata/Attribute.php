@@ -31,6 +31,7 @@ namespace ActiveRecord\Metadata;
  */
 class Attribute
 {
+
     /**
      * Alias del campo
      */

@@ -27,6 +27,7 @@ use \Iterator;
 
 class ResultSet implements Iterator
 {
+
     /**
      * Resultado de la consulta
      *
@@ -45,7 +46,7 @@ class ResultSet implements Iterator
      * Constructor
      *
      */
-    public function __construct ($result)
+    public function __construct($result)
     {
         $this->_result = $result;
     }
@@ -55,7 +56,7 @@ class ResultSet implements Iterator
      *
      * @return Array
      */
-    public function fetchArray ()
+    public function fetchArray()
     {
         return $this->_result->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -66,7 +67,7 @@ class ResultSet implements Iterator
      * @param string Class
      * @return array
      */
-    public function fetchObject ($class = 'stdClass')
+    public function fetchObject($class = 'stdClass')
     {
         return $this->_result->fetchObject($class);
     }
@@ -77,7 +78,7 @@ class ResultSet implements Iterator
      * @param int Fetch
      * @return ResultSet
      */
-    public function fetchAll($fetch=PDO::FETCH_OBJ)
+    public function fetchAll($fetch = PDO::FETCH_OBJ)
     {
         return $this->_result->fetchAll($fetch);
     }
@@ -87,7 +88,7 @@ class ResultSet implements Iterator
      *
      * @return int
      */
-    public function affectRows ()
+    public function affectRows()
     {
         return $this->_result->rowCount();
     }
@@ -96,7 +97,7 @@ class ResultSet implements Iterator
      * Reset resultset pointer
      * (implementation required by 'rewind()' method in Iterator interface)
      */
-    public function rewind ()
+    public function rewind()
     {
         $this->_pointer = 0;
     }
@@ -105,9 +106,9 @@ class ResultSet implements Iterator
      * get current row set in result set
      * (implementation required by 'current()' method in Iterator interface)
      */
-    public function current ()
+    public function current()
     {
-        if (! $this->valid()) {
+        if (!$this->valid()) {
             throw new \PDOException('Unable to retrieve current row.');
         }
         return $this->fetchObject();
@@ -117,7 +118,7 @@ class ResultSet implements Iterator
      * Obtiene la posición actual del Puntero
      *
      */
-    public function key ()
+    public function key()
     {
         return $this->_pointer;
     }
@@ -126,9 +127,9 @@ class ResultSet implements Iterator
      * Mueve el puntero a la siguiente posición
      *
      */
-    public function next ()
+    public function next()
     {
-        ++ $this->_pointer;
+        ++$this->_pointer;
     }
 
     /**
@@ -136,8 +137,9 @@ class ResultSet implements Iterator
      *
      * @return boolean
      */
-    public function valid ()
+    public function valid()
     {
         return $this->_pointer < $this->_result->rowCount();
     }
+
 }

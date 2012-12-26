@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -28,8 +29,8 @@ use ActiveRecord\Config\Config;
 use ActiveRecord\DbPool\DbPool;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Config\Parameters;
-use KumbiaPHP\EventDispatcher\EventDispatcher;
-use KumbiaPHP\EventDispatcher\EventDispatcherInterface;
+use K2\EventDispatcher\EventDispatcher;
+use K2\EventDispatcher\EventDispatcherInterface;
 
 /**
  * \ActiveRecord\Adapter\Adapter

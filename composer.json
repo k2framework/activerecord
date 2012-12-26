@@ -10,12 +10,12 @@
             "email": "programador.manuel@gmail.com"
         }
     ],
-    "require":{
+    "require": {
         "kumbiaphp/event-dispatcher": "dev-master",
         "kumbiaphp/dependency-injection": "dev-master"
     },
-    "autoload":{
-        "psr-0":{"ActiveRecord\\" : "lib/"}
+    "autoload": {
+        "psr-0": {"ActiveRecord\\": "lib/"}
     },
     "minimum-stability": "dev"
 }
