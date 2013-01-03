@@ -3,7 +3,7 @@
 namespace ActiveRecord\Event;
 
 use ActiveRecord\Model;
-use KumbiaPHP\EventDispatcher\Event as Base;
+use K2\EventDispatcher\Event as Base;
 
 class Event extends Base
 {
@@ -40,4 +40,5 @@ class Event extends Base
     {
         return $this->hasResult;
     }
+
 }

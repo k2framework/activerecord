@@ -1,4 +1,5 @@
 <?php
+
 /**
  * KumbiaPHP web & app Framework
  *
@@ -823,7 +824,7 @@ class Model implements \Serializable
         $dbQuery = new DbQuery();
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
-        
+
         $data = $this->getTableValues();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_UPDATE)) {
