@@ -454,7 +454,7 @@ class Model implements \Serializable
     public static function createQuery()
     {
         // Crea la instancia de DbQuery
-        return self::$dbQuery[get_called_class()] = new DbQuery();
+        return self::$dbQuery[get_called_class()] = new DbQuery(new static());
     }
 
     /**
@@ -641,7 +641,7 @@ class Model implements \Serializable
         }
 
         // Nuevo contenedor de consulta
-        $dbQuery = new DbQuery();
+        $dbQuery = new DbQuery($this);
 
         $data = $this->getTableValues();
 
@@ -821,7 +821,7 @@ class Model implements \Serializable
         }
 
         // Objeto de consulta
-        $dbQuery = new DbQuery();
+        $dbQuery = new DbQuery($this);
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
 
@@ -857,7 +857,7 @@ class Model implements \Serializable
     public function delete()
     {
         // Objeto de consulta
-        $dbQuery = new DbQuery();
+        $dbQuery = new DbQuery($this);
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
 

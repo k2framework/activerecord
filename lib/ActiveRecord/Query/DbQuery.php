@@ -24,6 +24,8 @@
 
 namespace ActiveRecord\Query;
 
+use ActiveRecord\Model;
+
 class DbQuery
 {
 
@@ -33,6 +35,17 @@ class DbQuery
      * @var array
      */
     protected $sql = array();
+
+    /**
+     *
+     * @var Model
+     */
+    protected $model;
+
+    public function __construct(Model $model = null)
+    {
+        $this->model = $model;
+    }
 
     /**
      * Clausula DISTINCT
@@ -342,6 +355,28 @@ class DbQuery
     public function getSqlArray()
     {
         return $this->sql;
+    }
+
+    /**
+     * Efectua una consulta SELECT y devuelve el primer registro encontrado.
+     *
+     * @param string $fetchMode
+     * @return Model
+     */
+    public function find($fetchMode = null)
+    {
+        return $this->model->find($fetchMode);
+    }
+
+    /**
+     * Efectua una consulta SELECT y devuelve un arreglo con los registros devueltos.
+     *
+     * @param string $fetchMode
+     * @return array
+     */
+    public function findAll($fetchMode = null)
+    {
+        return $this->model->findAll($fetchMode);
     }
 
 }
