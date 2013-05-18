@@ -30,7 +30,6 @@ use ActiveRecord\DbPool\DbPool;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Config\Parameters;
 use K2\EventDispatcher\EventDispatcher;
-use K2\EventDispatcher\EventDispatcherInterface;
 
 /**
  * \ActiveRecord\Adapter\Adapter
@@ -362,14 +361,14 @@ abstract class Adapter
      * Establece el despachador de eventos a usar el en ActiveRecord
      * @param EventDispatcherInterface $ed 
      */
-    public static function setEventDispatcher(EventDispatcherInterface $ed)
+    public static function setEventDispatcher(EventDispatcher $ed)
     {
         self::$eventDispatcher = $ed;
     }
 
     /**
      * Devuelve la instancia del despachador de eventos usado actualmente.
-     * @return EventDispatcherInterface
+     * @return EventDispatcher
      */
     public static function getEventDispatcher()
     {
