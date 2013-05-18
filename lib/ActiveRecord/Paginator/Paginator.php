@@ -76,6 +76,7 @@ class Paginator
         $arrayQuery = $query->getSqlArray() + array('columns' => '*');
 
         $numItems = $model::count();
+
         $offset = ($page - 1) * $per_page;
 
         $query->columns($arrayQuery['columns'])->limit($per_page)->offset($offset);
