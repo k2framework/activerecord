@@ -10,10 +10,6 @@
             "email": "programador.manuel@gmail.com"
         }
     ],
-    "require":{
-        "k2/event-dispatcher": "dev-master",
-        "k2/dependency-injection": "dev-master"
-    },
     "autoload":{
         "psr-0":{"ActiveRecord\\" : "lib/"}
     },
