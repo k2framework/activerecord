@@ -135,12 +135,8 @@ class Model implements \Serializable
         }
         $this->initialize();
         if (!isset(self::$relations[get_called_class()])) {
+            self::$relations[get_called_class()] = array();
             $this->createRelations();
-            //si el método no crea ninguna relación, le pasamos un arreglo vacio 
-            //para que no se vuelva a llamar a createRelations en la creacion
-            //de otras instancias de la misma clase
-            isset(self::$relations[get_called_class()]) ||
-                    self::$relations[get_called_class()] = array();
         }
     }
 
@@ -465,9 +461,9 @@ class Model implements \Serializable
      */
     public static function find($fetchMode = null)
     {
-        $model = new static();
+        $model = self::dbQuery()->getModel();
 
-        $dbQuery = static::dbQuery()->select();
+        $dbQuery = self::dbQuery()->select();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
             $event = new SelectEvent($model, $dbQuery);
@@ -494,7 +490,7 @@ class Model implements \Serializable
     {
         $model = new static();
 
-        $dbQuery = static::dbQuery()->select();
+        $dbQuery = self::dbQuery()->select();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
             $event = new SelectEvent($model, $dbQuery);
@@ -726,7 +722,7 @@ class Model implements \Serializable
     {
         $model = new static();
         // Ejecuta la consulta
-        return $model->query(static::dbQuery()->delete())->rowCount();
+        return $model->query(self::dbQuery()->delete())->rowCount();
     }
 
     /**
@@ -737,7 +733,7 @@ class Model implements \Serializable
      */
     public static function count()
     {
-        static::dbQuery()->columns("COUNT(*) AS n");
+        self::dbQuery()->columns("COUNT(*) AS n");
         return static::find(static::FETCH_OBJ)->n;
     }
 
@@ -787,7 +783,7 @@ class Model implements \Serializable
     public function exists()
     {
         // Establece condicion de busqueda con clave primaria
-        $this->wherePK(static::dbQuery());
+        $this->wherePK(self::dbQuery());
 
         return $this->existsOne();
     }
@@ -920,7 +916,7 @@ class Model implements \Serializable
 
         $model->fetchMode($fetchMode);
 
-        return Paginator::paginate($model, static::dbQuery(), $page, $per_page);
+        return Paginator::paginate($model, self::dbQuery(), $page, $per_page);
     }
 
     /**
@@ -1019,10 +1015,10 @@ class Model implements \Serializable
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foránea)
      */
-    protected function belongsTo($model, $fk)
+    protected function belongsTo($model, $fk = null)
     {
         $fk || $fk = $this->createTableName($model) . '_id';
-        static::$relations[get_called_class()]['belongsTo'][$model] = $fk;
+        self::$relations[get_called_class()]['belongsTo'][$model] = $fk;
     }
 
     /**
@@ -1036,7 +1032,7 @@ class Model implements \Serializable
     protected function hasOne($model, $fk = null)
     {
         $fk || $fk = $this->getTable() . "_id";
-        static::$relations[get_called_class()]['hasOne'][$model] = $fk;
+        self::$relations[get_called_class()]['hasOne'][$model] = $fk;
     }
 
     /**
@@ -1050,7 +1046,7 @@ class Model implements \Serializable
     protected function hasMany($model, $fk = null)
     {
         $fk || $fk = $this->getTable() . "_id";
-        static::$relations[get_called_class()]['hasMany'][$model] = $fk;
+        self::$relations[get_called_class()]['hasMany'][$model] = $fk;
     }
 
     /**
@@ -1067,7 +1063,7 @@ class Model implements \Serializable
     {
         $fk || $fk = $this->createTableName($model) . '_id';
         $key || $key = $this->getTable() . '_id';
-        static::$relations[get_called_class()]['hasAndBelongsToMany']
+        self::$relations[get_called_class()]['hasAndBelongsToMany']
                 [$model] = compact('through', 'fk', 'key');
     }
 
@@ -1080,48 +1076,48 @@ class Model implements \Serializable
      */
     public function get($model)
     {
-        if (!isset(static::$relations[get_called_class()])) {
+        if (!isset(self::$relations[get_called_class()])) {
             return false;
         }
 
-        if (isset(static::$relations[get_called_class()]['belongsTo']) &&
-                isset(static::$relations[get_called_class()]['belongsTo'][$model])) {
+        if (isset(self::$relations[get_called_class()]['belongsTo']) &&
+                isset(self::$relations[get_called_class()]['belongsTo'][$model])) {
 
             if (!isset($this->{$fk})) {
                 return false;
             }
 
-            $fk = static::$relations[get_called_class()]['belongsTo'][$model];
+            $fk = self::$relations[get_called_class()]['belongsTo'][$model];
 
             return $model::findBy($fk, $this->{$fk});
         }
 
-        if (isset(static::$relations[get_called_class()]['hasOne']) &&
-                isset(static::$relations[get_called_class()]['hasOne'][$model])) {
+        if (isset(self::$relations[get_called_class()]['hasOne']) &&
+                isset(self::$relations[get_called_class()]['hasOne'][$model])) {
 
             if (!isset($this->{$fk})) {
                 return false;
             }
 
-            $fk = static::$relations[get_called_class()]['hasOne'][$model];
+            $fk = self::$relations[get_called_class()]['hasOne'][$model];
 
             return $model::findBy(self::$metadata[$model]->getPK(), $this->{$fk});
         }
 
-        if (isset(static::$relations[get_called_class()]['hasMany']) &&
-                isset(static::$relations[get_called_class()]['hasMany'][$model])) {
+        if (isset(self::$relations[get_called_class()]['hasMany']) &&
+                isset(self::$relations[get_called_class()]['hasMany'][$model])) {
 
             if (!isset($this->{$this->metadata()->getPK()})) {
                 return array();
             }
 
-            $fk = static::$relations[get_called_class()]['hasMany'][$model];
+            $fk = self::$relations[get_called_class()]['hasMany'][$model];
 
             return $model::findAllBy($fk, $this->{$this->metadata()->getPK()});
         }
 
-        if (isset(static::$relations[get_called_class()]['hasAndBelongsToMany']) &&
-                isset(static::$relations[get_called_class()]['hasAndBelongsToMany'][$model])) {
+        if (isset(self::$relations[get_called_class()]['hasAndBelongsToMany']) &&
+                isset(self::$relations[get_called_class()]['hasAndBelongsToMany'][$model])) {
 
             $pk1 = $this->metadata()->getPK();
 
@@ -1129,7 +1125,7 @@ class Model implements \Serializable
                 return array();
             }
 
-            $relation = static::$relations[get_called_class()]['hasAndBelongsToMany'][$model];
+            $relation = self::$relations[get_called_class()]['hasAndBelongsToMany'][$model];
 
             $instance = new $model();
 
@@ -1159,9 +1155,9 @@ class Model implements \Serializable
      */
     private static function dbQuery(DbQuery $query = null)
     {
-        static $dbQuery;
+        static $dbQuery = null;
 
-        if ($query) {
+        if (null !== $query) {
             $dbQuery = $query;
         }
 
@@ -1170,6 +1166,18 @@ class Model implements \Serializable
         }
 
         return $dbQuery;
+    }
+
+    public function getRelationalModel($fk, $inType = 'belongsTo')
+    {
+        if (!isset(self::$relations[get_called_class()][$inType])) {
+            return false;
+        }
+        if (in_array($fk, self::$relations[get_called_class()][$inType])) {
+            return array_search($fk, self::$relations[get_called_class()][$inType]);
+        }
+
+        return false;
     }
 
     /**

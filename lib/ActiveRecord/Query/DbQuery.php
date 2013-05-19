@@ -379,4 +379,9 @@ class DbQuery
         return $this->model->findAll($fetchMode);
     }
 
+    public function getModel()
+    {
+        return $this->model;
+    }
+
 }

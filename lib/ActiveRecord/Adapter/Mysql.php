@@ -83,6 +83,7 @@ class Mysql extends Adapter
                             $metadata->setPK($field->Field);
                             $attribute->PK = TRUE;
                             break;
+                        case 'MUL':
                         case 'FK':
                             $metadata->setFK($field->Field);
                             $attribute->FK = TRUE;
