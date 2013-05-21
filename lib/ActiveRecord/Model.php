@@ -73,7 +73,7 @@ class Model implements \Serializable
      *
      * @var strings
      */
-    protected $connection = null;
+    protected static $connection = null;
 
     /**
      * Tabla origen de datos
@@ -95,13 +95,6 @@ class Model implements \Serializable
      * @var Obj
      */
     private static $dbQuery = null;
-
-    /**
-     * ResulSet PDOStatement
-     *
-     * @var \PDOStatement
-     */
-    protected $statemet = null;
 
     /**
      * Modo de obtener datos
@@ -304,26 +297,21 @@ class Model implements \Serializable
     }
 
     /**
-     * Asigna el nombre de la tabla que el modelo está representando.
-     *
-     * @param string $table
-     */
-    public function setTable($table)
-    {
-        $this->table = $table;
-    }
-
-    /**
      * Obtiene el nombre de la tabla que el modelo está representando.
      *
      * @return string
      */
-    public function getTable()
+    public static function table($name = null)
     {
-        if (!isset($this->table)) {
-            $this->table = $this->createTableName(get_class($this));
+        static $table;
+
+        if ($name) {
+            $table = $name;
+        } elseif (!$table) {
+            $table = self::createTableName(get_called_class());
         }
-        return $this->table;
+
+        return $table;
     }
 
     /**
@@ -349,31 +337,6 @@ class Model implements \Serializable
     }
 
     /**
-     * Asigna la el nombre de la conexión a usar por el modelo.
-     * 
-     * El nombre debe ser el identificador de alguna de las configuraciones
-     * de la clase ActiveRecord\Config\Config
-     *
-     * @param string $conn
-     * @return ActiveRecord
-     */
-    public function setConnection($conn)
-    {
-        $this->connection = $conn;
-        return $this;
-    }
-
-    /**
-     * Obtiene el nombre de la conexión utilizada por el modelo
-     *
-     * @return string
-     */
-    public function getConnection()
-    {
-        return $this->connection;
-    }
-
-    /**
      * Ejecuta una setencia SQL aplicando Prepared Statement
      *
      * @param string $sql Setencia SQL
@@ -381,22 +344,21 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return \PDOStatement
      */
-    public function sql($sql, $params = null, $fetchMode = null)
+    public static function sql($sql, $params = null, $fetchMode = self::FETCH_MODEL)
     {
+        $statement = null;
         try {
-            // Obtiene una instancia del adaptador y prepara la consulta
-            $this->statemet = Adapter::factory($this->connection)
+            $statement = Adapter::factory(static::$connection)
                     ->prepare($sql);
 
-            // Indica el modo de obtener los datos en el ResultSet
-            $this->fetchMode($fetchMode);
+            $statement->setFetchMode($fetchMode);
 
             // Ejecuta la consulta
-            $this->statemet->execute($params);
-            return $this->statemet;
+            $statement->execute($params);
+            return $statement;
         } catch (\PDOException $e) {
-            if ($this->statemet instanceof \PDOStatement) {
-                throw new SqlException($e, $this->statemet);
+            if ($statement instanceof \PDOStatement) {
+                throw new SqlException($e, $statement);
             } else {
                 throw $e;
             }
@@ -410,31 +372,31 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return \PDOStatement
      */
-    public function query($dbQuery, $fetchMode = null)
+    public static function query(DbQuery $dbQuery, $fetchMode = self::FETCH_MODEL)
     {
-        $dbQuery->table($this->getTable());
+        $dbQuery->table(static::table());
 
-        static::createQuery();
+//        static::createQuery();
 
         // Asigna el esquema si existe
-        if ($this->schema) {
-            $dbQuery->schema($this->schema);
-        }
-
+//        if ($this->schema) {
+//            $dbQuery->schema($this->schema);
+//        }
+        $statemet = null;
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
-            $this->statemet = Adapter::factory($this->connection)
+            $statemet = Adapter::factory(static::$connection)
                     ->prepareDbQuery($dbQuery);
 
             // Indica el modo de obtener los datos en el ResultSet
-            $this->fetchMode($fetchMode);
+            $statemet->setFetchMode($fetchMode);
 
             // Ejecuta la consulta
-            $this->statemet->execute($dbQuery->getBind());
-            return $this->statemet;
+            $statemet->execute($dbQuery->getBind());
+            return $statemet;
         } catch (\PDOException $e) {
-            if ($this->statemet instanceof \PDOStatement) {
-                throw new SqlException($e, $this->statemet, $dbQuery->getBind());
+            if ($statemet instanceof \PDOStatement) {
+                throw new SqlException($e, $statemet, $dbQuery->getBind());
             } else {
                 throw $e;
             }
@@ -459,23 +421,23 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return Model
      */
-    public static function find($fetchMode = null)
+    public static function find($fetchMode = self::FETCH_MODEL)
     {
         $model = self::dbQuery()->getModel();
 
         $dbQuery = self::dbQuery()->select();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent($model, $dbQuery);
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
-        }
+//        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
+//            $event = new SelectEvent($model, $dbQuery);
+//            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
+//        }
 
-        $result = $model->query($dbQuery, $fetchMode)->fetch();
+        $result = self::query($dbQuery, $fetchMode)->fetch();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-            $event = new SelectEvent($model, $dbQuery, $result, true);
-            Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
-        }
+//        if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
+//            $event = new SelectEvent($model, $dbQuery, $result, true);
+//            Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
+//        }
 
         return $result;
     }
@@ -656,7 +618,7 @@ class Model implements \Serializable
             // Convenio patron identidad en activerecord si PK es "id"
             if (is_string($pk = $this->metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
                 // Obtiene el ultimo id insertado y lo carga en el objeto
-                $this->$pk = Adapter::factory($this->connection)
+                $this->$pk = Adapter::factory(static::$connection)
                                 ->pdo()->lastInsertId();
             }
 
@@ -984,7 +946,7 @@ class Model implements \Serializable
      */
     public function begin()
     {
-        return Adapter::factory($this->connection)->pdo()->beginTransaction();
+        return Adapter::factory(static::$connection)->pdo()->beginTransaction();
     }
 
     /**
@@ -994,7 +956,7 @@ class Model implements \Serializable
      */
     public function rollback()
     {
-        return Adapter::factory($this->connection)->pdo()->rollBack();
+        return Adapter::factory(static::$connection)->pdo()->rollBack();
     }
 
     /**
@@ -1004,7 +966,7 @@ class Model implements \Serializable
      */
     public function commit()
     {
-        return Adapter::factory($this->connection)->pdo()->commit();
+        return Adapter::factory(static::$connection)->pdo()->commit();
     }
 
     /**
@@ -1185,9 +1147,9 @@ class Model implements \Serializable
      * @param string $className nombre de la clase.
      * @return string 
      */
-    private function createTableName($className)
+    private static function createTableName($className)
     {
-        $className = basename(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $className));
+        $className = end(explode('\\', $className));
         return strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", $className));
     }
 
