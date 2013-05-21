@@ -140,14 +140,14 @@ class Model implements \Serializable
      */
     public function metadata()
     {
-        $model = get_called_class();
+        static $metadata;
 
-        if (!isset(self::$metadata[$model])) {
-            self::$metadata[$model] = Adapter::factory($this->getConnection())
-                    ->describe($this->getTable(), $this->getSchema());
+        if (!$metadata) {
+            $metadata = Adapter::factory(static::$connection)
+                    ->describe(self::table(), null); //el esquema por ahora null
         }
 
-        return self::$metadata[$model];
+        return $metadata;
     }
 
     /**
@@ -377,7 +377,6 @@ class Model implements \Serializable
         $dbQuery->table(static::table());
 
 //        static::createQuery();
-
         // Asigna el esquema si existe
 //        if ($this->schema) {
 //            $dbQuery->schema($this->schema);
@@ -1023,7 +1022,7 @@ class Model implements \Serializable
      */
     protected function hasAndBelongsToMany($model, $through, $fk = null, $key = null)
     {
-        $fk || $fk = $this->createTableName($model) . '_id';
+        $fk || $fk = self::createTableName($model) . '_id';
         $key || $key = $this->getTable() . '_id';
         self::$relations[get_called_class()]['hasAndBelongsToMany']
                 [$model] = compact('through', 'fk', 'key');
@@ -1149,7 +1148,8 @@ class Model implements \Serializable
      */
     private static function createTableName($className)
     {
-        $className = end(explode('\\', $className));
+        $className = explode('\\', $className);
+        $className = end($className);
         return strtolower(preg_replace('/(.+)([A-Z])/', "$1_$2", $className));
     }
 
