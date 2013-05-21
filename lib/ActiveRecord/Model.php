@@ -722,7 +722,7 @@ class Model implements \Serializable
     {
         $model = new static();
         // Ejecuta la consulta
-        return $model->query(self::dbQuery()->delete())->rowCount();
+        return $model->query($query->delete())->rowCount();
     }
 
     /**
