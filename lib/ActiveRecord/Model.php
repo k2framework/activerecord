@@ -359,8 +359,9 @@ class Model implements \Serializable
      */
     public static function createQuery()
     {
+        $a = get_called_class();
         // Crea la instancia de DbQuery
-        return self::dbQuery(new DbQuery(get_called_class()));
+        return static::dbQuery(new DbQuery(get_called_class()));
     }
 
     /**
@@ -371,8 +372,7 @@ class Model implements \Serializable
      */
     public static function find($fetchMode = self::FETCH_MODEL)
     {
-        $dbQuery = self::dbQuery()->select();
-
+        $dbQuery = static::dbQuery()->select();
         $result = static::query($dbQuery, $fetchMode)->fetch();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
@@ -391,7 +391,7 @@ class Model implements \Serializable
      */
     public static function findAll($fetchMode = null)
     {
-        $dbQuery = self::dbQuery()->select();
+        $dbQuery = static::dbQuery()->select();
 
         $result = static::query($dbQuery, $fetchMode)->fetchAll();
 
@@ -627,7 +627,7 @@ class Model implements \Serializable
      */
     public static function count(DbQuery $query = null)
     {
-        self::dbQuery($query)->columns("COUNT(*) AS n");
+        static::dbQuery($query)->columns("COUNT(*) AS n");
         return static::find(static::FETCH_OBJ)->n;
     }
 
@@ -677,7 +677,7 @@ class Model implements \Serializable
     public function exists()
     {
         // Establece condicion de busqueda con clave primaria
-        $this->wherePK(self::dbQuery());
+        $this->wherePK(static::dbQuery());
 
         return $this->existsOne();
     }
@@ -806,7 +806,7 @@ class Model implements \Serializable
      */
     public static function paginate($page, $per_page = 10, $fetchMode = null)
     {
-        return Paginator::paginate(self::dbQuery(), $page, $per_page, $fetchMode);
+        return Paginator::paginate(static::dbQuery(), $page, $per_page, $fetchMode);
     }
 
     /**
