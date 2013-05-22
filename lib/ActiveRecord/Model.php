@@ -872,7 +872,7 @@ class Model implements \Serializable
      *
      * @return boolean
      */
-    public function begin()
+    public static function begin()
     {
         return Adapter::factory(static::$connection)->pdo()->beginTransaction();
     }
@@ -882,7 +882,7 @@ class Model implements \Serializable
      *
      * @return boolean
      */
-    public function rollback()
+    public static function rollback()
     {
         return Adapter::factory(static::$connection)->pdo()->rollBack();
     }
@@ -892,7 +892,7 @@ class Model implements \Serializable
      *
      * @return boolean
      */
-    public function commit()
+    public static function commit()
     {
         return Adapter::factory(static::$connection)->pdo()->commit();
     }
