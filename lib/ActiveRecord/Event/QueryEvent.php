@@ -2,10 +2,7 @@
 
 namespace ActiveRecord\Event;
 
-use ActiveRecord\Model;
-use ActiveRecord\Query\DbQuery;
-
-class SelectEvent extends Event
+class QueryEvent extends Event
 {
 
     const INSERT = 'INSERT';
@@ -15,32 +12,29 @@ class SelectEvent extends Event
 
     /**
      *
-     * @var DbQuery 
+     * @var \PDOStatement
      */
-    protected $dbQuery;
+    protected $statement;
+    protected $queryType;
 
-    function __construct($modelClass, DbQuery $dbQuery, $result = null, $hasResult = false)
+    function __construct($modelClass, \PDOStatement $statement, $result = null)
     {
-        $this->dbQuery = $dbQuery;
-        parent::__construct($modelClass, $result, $hasResult);
+        $this->statement = $statement;
+        parent::__construct($modelClass, $result, true);
     }
 
-    public function getParameters()
+    public function getStatement()
     {
-        return $this->dbQuery->getBind();
-    }
-
-    public function getDbQuery()
-    {
-        return $this->dbQuery;
+        return $this->statement;
     }
 
     public function getQueryType()
     {
         if (!$this->queryType) {
-            $sql = $this->dbQuery->getSqlArray();
-            $query = strtoupper($this->query);
-            switch ($sql['command']) {
+            $sql = trim($this->statement->queryString);
+            preg_match('/^(\w+)/', $sql, $matches);
+            $command = strtolower($matches[0]);
+            switch ($command) {
                 case 'insert':
                     $this->queryType = self::SELECT;
                     break;

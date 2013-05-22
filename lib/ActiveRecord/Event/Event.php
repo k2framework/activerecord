@@ -14,11 +14,11 @@ class Event extends Base
      */
     protected $model;
     protected $result;
-    protected $hasResult;
 
-    function __construct($modelClass, $result = null, $hasResult = false)
+    function __construct($modelClass, $result = null)
     {
         $this->model = $modelClass;
+        $this->result = $result;
     }
 
     public function getModel()
@@ -34,11 +34,6 @@ class Event extends Base
     public function getResult()
     {
         return $this->result;
-    }
-
-    public function hasResult()
-    {
-        return $this->hasResult;
     }
 
 }

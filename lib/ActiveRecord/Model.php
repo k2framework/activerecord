@@ -29,7 +29,7 @@ use ActiveRecord\Event\Events;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Adapter\Adapter;
 use ActiveRecord\Metadata\Metadata;
-use ActiveRecord\Event\SelectEvent;
+use ActiveRecord\Event\QueryEvent;
 use ActiveRecord\Paginator\Paginator;
 use ActiveRecord\Exception\SqlException;
 use ActiveRecord\Event\CreateOrUpdateEvent;
@@ -325,11 +325,6 @@ class Model implements \Serializable
 
         $dbQuery->table(static::table())->schema(static::schema());
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent(get_called_class(), $dbQuery);
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
-        }
-
         $statement = null;
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
@@ -373,11 +368,12 @@ class Model implements \Serializable
     public static function find($fetchMode = self::FETCH_MODEL)
     {
         $dbQuery = static::dbQuery()->select();
-        $result = static::query($dbQuery, $fetchMode)->fetch();
+        $statement = static::query($dbQuery, $fetchMode);
+        $result = $statement->fetch();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-            $event = new SelectEvent(get_called_class(), $dbQuery, $result, true);
-            Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
+        if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
+            $event = new QueryEvent(get_called_class(), $statement, $result, true);
+            Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
         }
 
         return $result;
@@ -393,11 +389,12 @@ class Model implements \Serializable
     {
         $dbQuery = static::dbQuery()->select();
 
-        $result = static::query($dbQuery, $fetchMode)->fetchAll();
+        $statement = static::query($dbQuery, $fetchMode);
+        $result = $statement->fetchAll();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-            $event = new SelectEvent(get_called_class(), $dbQuery, $result, true);
-            Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
+        if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
+            $event = new QueryEvent(get_called_class(), $statement, $result, true);
+            Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
         }
 
         return $result;
@@ -547,14 +544,8 @@ class Model implements \Serializable
         if (isset($data[static::metadata()->getPK()])) {
             unset($data[static::metadata()->getPK()]);
         }
-
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_CREATE)) {
-            $event = new CreateOrUpdateEvent(get_called_class(), $data);
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_CREATE, $event);
-        }
-
         // Ejecuta la consulta
-        if (static::query($dbQuery->insert($data))) {
+        if ($statement = static::query($dbQuery->insert($data))) {
 
             // Convenio patron identidad en activerecord si PK es "id"
             if (is_string($pk = static::metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
@@ -563,9 +554,13 @@ class Model implements \Serializable
                                 ->pdo()->lastInsertId();
             }
 
-            if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_CREATE)) {
-                $event = new CreateOrUpdateEvent(get_called_class(), $data);
-                Adapter::getEventDispatcher()->dispatch(Events::AFTER_CREATE, $event);
+            if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
+                $event = new QueryEvent(get_called_class(), $statement, $this, true);
+                Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
+            }
+            if (Adapter::getEventDispatcher()->hasListeners(Events::CREATE)) {
+                $event = new CreateOrUpdateEvent(get_called_class(), $this);
+                Adapter::getEventDispatcher()->dispatch(Events::CREATE, $event);
             }
 
             // Callback despues de crear
@@ -721,18 +716,16 @@ class Model implements \Serializable
         $this->wherePK($dbQuery);
 
         $data = $this->getTableValues();
-
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_UPDATE)) {
-            $event = new CreateOrUpdateEvent(get_called_class(), $data);
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_UPDATE, $event);
-        }
-
         // Ejecuta la consulta con el query utilizado para el exists
-        if (static::query($dbQuery->update($data))) {
+        if ($statement = static::query($dbQuery->update($data))) {
 
-            if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_UPDATE)) {
-                $event = new CreateOrUpdateEvent(get_called_class(), $data);
-                Adapter::getEventDispatcher()->dispatch(Events::AFTER_UPDATE, $event);
+            if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
+                $event = new QueryEvent(get_called_class(), $statement, $this, true);
+                Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
+            }
+            if (Adapter::getEventDispatcher()->hasListeners(Events::UPDATE)) {
+                $event = new CreateOrUpdateEvent(get_called_class(), $this);
+                Adapter::getEventDispatcher()->dispatch(Events::UPDATE, $event);
             }
 
             // Callback despues de actualizar
@@ -755,16 +748,11 @@ class Model implements \Serializable
         $dbQuery = new DbQuery($this);
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
-
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_DELETE)) {
-            $event = new Event(get_called_class());
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_DELETE, $event);
-        }
         // Ejecuta la consulta con el query utilizado para el exists
         if (static::query($dbQuery->delete())) {
-            if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_DELETE)) {
+            if (Adapter::getEventDispatcher()->hasListeners(Events::DELETE)) {
                 $event = new Event(get_called_class());
-                Adapter::getEventDispatcher()->dispatch(Events::AFTER_DELETE, $event);
+                Adapter::getEventDispatcher()->dispatch(Events::DELETE, $event);
             }
             return true;
         }

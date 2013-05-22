@@ -9,7 +9,7 @@ class CreateOrUpdateEvent extends Event
 
     protected $data;
 
-    function __construct($model, array $data = array())
+    function __construct($model, $data)
     {
         $this->data = $data;
         parent::__construct($model);
