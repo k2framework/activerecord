@@ -322,7 +322,7 @@ class Model implements \Serializable
     public static function query(DbQuery $dbQuery, $fetchMode = self::FETCH_MODEL)
     {
         static::createQuery();
-        
+
         $dbQuery->table(static::table())->schema(static::schema());
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
@@ -408,13 +408,18 @@ class Model implements \Serializable
      * @param \ActiveRecord\Query\DbQuery $q
      * @param array $conditions
      */
-    private static function createConditions(DbQuery $q, array $conditions = array())
+    protected static function createConditions(DbQuery $q, array $conditions = array())
     {
         $x = 0;
         foreach ($conditions as $column => $value) {
             if (is_array($value)) {
-                $q->where("$column IN (:v$v)")
-                        ->bindValue("v$x", "'" . join("','", $value) . "'");
+                if (count($value)) {
+                    $cond = ':_' . join(",:_", array_keys($value));
+                    $q->where("$column IN ($cond)");
+                    foreach ($value as $key => $val) {
+                        $q->bindValue("_$key", (string) $val);
+                    }
+                }
             } else {
                 $q->where("$column = :v$x")
                         ->bindValue("v$x", $value);
@@ -431,7 +436,7 @@ class Model implements \Serializable
      */
     public static function findBy(array $conditions = array(), $fetchMode = null)
     {
-        self::createConditions(static::createQuery());
+        self::createConditions(static::createQuery(), $conditions);
 
         return static::find($fetchMode);
     }
@@ -444,7 +449,7 @@ class Model implements \Serializable
      */
     public static function findAllBy(array $conditions = array(), $fetchMode = null)
     {
-        self::createConditions(static::createQuery());
+        self::createConditions(static::createQuery(), $conditions);
 
         return static::findAll($fetchMode);
     }
