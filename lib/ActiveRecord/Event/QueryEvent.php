@@ -2,6 +2,8 @@
 
 namespace ActiveRecord\Event;
 
+use ActiveRecord\PDOStatement;
+
 class QueryEvent extends Event
 {
 
@@ -12,17 +14,21 @@ class QueryEvent extends Event
 
     /**
      *
-     * @var \PDOStatement
+     * @var PDOStatement
      */
     protected $statement;
     protected $queryType;
 
-    function __construct($modelClass, \PDOStatement $statement, $result = null)
+    function __construct($modelClass, PDOStatement $statement, $result = null)
     {
         $this->statement = $statement;
         parent::__construct($modelClass, $result, true);
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getStatement()
     {
         return $this->statement;
@@ -35,8 +41,11 @@ class QueryEvent extends Event
             preg_match('/^(\w+)/', $sql, $matches);
             $command = strtolower($matches[0]);
             switch ($command) {
-                case 'insert':
+                case 'select':
                     $this->queryType = self::SELECT;
+                    break;
+                case 'insert':
+                    $this->queryType = self::INSERT;
                     break;
                 case 'create':
                     $this->queryType = self::INSERT;
