@@ -321,6 +321,8 @@ class Model implements \Serializable
      */
     public static function query(DbQuery $dbQuery, $fetchMode = self::FETCH_MODEL)
     {
+        static::createQuery();
+        
         $dbQuery->table(static::table())->schema(static::schema());
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
@@ -1020,8 +1022,8 @@ class Model implements \Serializable
             $key = $relation['key'];
             $pk2 = $model::metadata()->getPK();
             $thisTable = static::table();
-            $modelTable = self::createTableName($model);
-            $through = self::createTableName($relation['through']);
+            $modelTable = $model::table();
+            $through = $relation['through']::table();
 
             $model::createQuery()
                     ->select("$modelTable.*")
@@ -1040,9 +1042,9 @@ class Model implements \Serializable
      * Devuelve la instancia del DbQuery asociado a un modelo si existe, si no lo crea y lo devuelve.
      * @return DbQuery
      */
-    private static function dbQuery(DbQuery $query = null)
+    protected static function dbQuery(DbQuery $query = null)
     {
-        static $dbQuery;
+        static $dbQuery = null;
 
         if ($query) {
             $dbQuery = $query;
