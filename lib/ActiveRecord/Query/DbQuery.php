@@ -25,6 +25,7 @@
 namespace ActiveRecord\Query;
 
 use ActiveRecord\Model;
+use ActiveRecord\Paginator\Paginator;
 
 class DbQuery
 {
@@ -40,11 +41,11 @@ class DbQuery
      *
      * @var Model
      */
-    protected $model;
+    protected $modelClass;
 
-    public function __construct(Model $model = null)
+    public function __construct($modelClass = null)
     {
-        $this->model = $model;
+        $this->modelClass = $modelClass;
     }
 
     /**
@@ -365,7 +366,7 @@ class DbQuery
      */
     public function find($fetchMode = null)
     {
-        return $this->model->find($fetchMode);
+        return call_user_func(array($this->modelClass, 'find'), $fetchMode);
     }
 
     /**
@@ -376,12 +377,24 @@ class DbQuery
      */
     public function findAll($fetchMode = null)
     {
-        return $this->model->findAll($fetchMode);
+        return call_user_func(array($this->modelClass, 'findAll'), $fetchMode);
     }
 
-    public function getModel()
+    /**
+     * Realiza una consulta SELECT y devuelve los resultados paginados.
+     * @param int $page numero página a devolver
+     * @param int $per_page registros por página
+     * @param string $fetchMode como serán devueltos los registros (array, model, obj)
+     * @return array 
+     */
+    public function paginate($page, $per_page = 10, $fetchMode = null)
     {
-        return $this->model;
+        return Paginator::paginate($this, $page, $per_page, $fetchMode);
+    }
+
+    public function getModelClass()
+    {
+        return $this->modelClass;
     }
 
 }
