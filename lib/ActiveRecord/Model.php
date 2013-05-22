@@ -835,16 +835,16 @@ class Model implements \Serializable
      */
     public function transaction(\Closure $function)
     {
-        $this->begin();
+        self::begin();
         try {
             if (false === $function($this)) {
-                $this->rollback();
+                self::rollback();
                 return false;
             }
-            $this->commit();
+            self::commit();
             return true;
-        } catch (Exception $e) {
-            $this->rollback();
+        } catch (\Exception $e) {
+            self::rollback();
             throw $e;
         }
     }
