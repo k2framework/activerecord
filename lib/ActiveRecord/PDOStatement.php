@@ -13,6 +13,7 @@ class PDOStatement extends Base
 {
 
     protected $parameters;
+    protected $sql;
 
     public function execute($input_parameters = null)
     {
@@ -28,7 +29,11 @@ class PDOStatement extends Base
      */
     public function getSqlQuery()
     {
-        
+        if (!$this->sql) {
+            $this->sql = strtr($this->queryString, (array) $this->parameters);
+        }
+
+        return $this->sql;
     }
 
 }
