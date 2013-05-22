@@ -76,18 +76,17 @@ class Model implements \Serializable
     protected static $connection = null;
 
     /**
-     * Tabla origen de datos
-     *
-     * @var string
-     */
-    protected $table = null;
-
-    /**
      * Esquema de datos
      *
      * @var string
      */
-    protected $schema = null;
+    protected static $schema = null;
+
+    /**
+     *
+     * @var Nombre de la tabla en la BD
+     */
+    protected static $table = null;
 
     /**
      * Objeto DbQuery para implementar chain
@@ -95,20 +94,6 @@ class Model implements \Serializable
      * @var Obj
      */
     private static $dbQuery = null;
-
-    /**
-     * Modo de obtener datos
-     *
-     * @var integer
-     */
-    protected $fetchMode = self::FETCH_MODEL;
-
-    /**
-     * Instancias de metadata de modelos
-     *
-     * @var array
-     */
-    private static $metadata = array();
 
     /**
      *
@@ -144,7 +129,7 @@ class Model implements \Serializable
 
         if (!$metadata) {
             $metadata = Adapter::factory(static::$connection)
-                    ->describe(self::table(), null); //el esquema por ahora null
+                    ->describe(static::table(), null); //el esquema por ahora null
         }
 
         return $metadata;
@@ -255,44 +240,24 @@ class Model implements \Serializable
         
     }
 
-    /**
-     * Indica/Obtiene el fetchModel a usar para una consulta.
-     * Si se pasa el parametro para el fetchMode, se establece en el modelo.
-     * si no se pasa nada ó null, se obtiene el fetchModel actual.
-     * @param string $fetchMode modalidad de devolución de los registros
-     * en una consulta, los parametros posibles son:
-     * array: devuelve una matriz con los datos de la consulta
-     * obj: devuelve un arreglo con objetos de tipo stdClass
-     * model: devuelve un arreglo con objetos del tipo de la clase que hace el find.
-     */
-    protected function fetchMode($fetchMode = null)
+    private static function setFetchMode(\PDOStatement $sts, $fetchMode)
     {
-        // Si no se especifica toma el por defecto
-        if (!$fetchMode) {
-            $fetchMode = $this->fetchMode;
-        } else {
-            //si es especifica lo establecemos
-            $this->fetchMode = $fetchMode;
-        }
+        switch ($fetchMode) {
+            // Obtener arrays
+            case static::FETCH_ARRAY:
+                $sts->setFetchMode(PDO::FETCH_ASSOC);
+                break;
 
-        if ($this->statemet instanceof \PDOStatement) {
-            switch ($fetchMode) {
-                // Obtener arrays
-                case static::FETCH_ARRAY:
-                    $this->statemet->setFetchMode(PDO::FETCH_ASSOC);
-                    break;
+            // Obtener instancias de objetos simples
+            case static::FETCH_OBJ:
+                $sts->setFetchMode(PDO::FETCH_OBJ);
+                break;
 
-                // Obtener instancias de objetos simples
-                case static::FETCH_OBJ:
-                    $this->statemet->setFetchMode(PDO::FETCH_OBJ);
-                    break;
-
-                // Obtener instancias del mismo modelo
-                case static::FETCH_MODEL:
-                default:
-                    // Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
-                    $this->statemet->setFetchMode(PDO::FETCH_CLASS, get_called_class());
-            }
+            // Obtener instancias del mismo modelo
+            case static::FETCH_MODEL:
+            default:
+                // Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
+                $sts->setFetchMode(PDO::FETCH_CLASS, get_called_class());
         }
     }
 
@@ -376,26 +341,25 @@ class Model implements \Serializable
     {
         $dbQuery->table(static::table());
 
-//        static::createQuery();
         // Asigna el esquema si existe
 //        if ($this->schema) {
 //            $dbQuery->schema($this->schema);
 //        }
-        $statemet = null;
+        $statement = null;
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
-            $statemet = Adapter::factory(static::$connection)
+            $statement = Adapter::factory(static::$connection)
                     ->prepareDbQuery($dbQuery);
 
             // Indica el modo de obtener los datos en el ResultSet
-            $statemet->setFetchMode($fetchMode);
+            self::setFetchMode($statement, $fetchMode);
 
             // Ejecuta la consulta
-            $statemet->execute($dbQuery->getBind());
-            return $statemet;
+            $statement->execute($dbQuery->getBind());
+            return $statement;
         } catch (\PDOException $e) {
-            if ($statemet instanceof \PDOStatement) {
-                throw new SqlException($e, $statemet, $dbQuery->getBind());
+            if ($statement instanceof \PDOStatement) {
+                throw new SqlException($e, $statement, $dbQuery->getBind());
             } else {
                 throw $e;
             }
@@ -411,7 +375,7 @@ class Model implements \Serializable
     public static function createQuery()
     {
         // Crea la instancia de DbQuery
-        return self::dbQuery(new DbQuery(new static()));
+        return self::dbQuery(new DbQuery(get_called_class()));
     }
 
     /**
@@ -422,21 +386,19 @@ class Model implements \Serializable
      */
     public static function find($fetchMode = self::FETCH_MODEL)
     {
-        $model = self::dbQuery()->getModel();
-
         $dbQuery = self::dbQuery()->select();
 
-//        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-//            $event = new SelectEvent($model, $dbQuery);
-//            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
-//        }
+        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
+            $event = new SelectEvent(get_called_class(), $dbQuery);
+            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
+        }
 
-        $result = self::query($dbQuery, $fetchMode)->fetch();
+        $result = static::query($dbQuery, $fetchMode)->fetch();
 
-//        if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-//            $event = new SelectEvent($model, $dbQuery, $result, true);
-//            Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
-//        }
+        if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
+            $event = new SelectEvent(get_called_class(), $dbQuery, $result, true);
+            Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
+        }
 
         return $result;
     }
@@ -449,19 +411,17 @@ class Model implements \Serializable
      */
     public static function findAll($fetchMode = null)
     {
-        $model = new static();
-
         $dbQuery = self::dbQuery()->select();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent($model, $dbQuery);
+            $event = new SelectEvent(get_called_class(), $dbQuery);
             Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
         }
 
-        $result = $model->query($dbQuery, $fetchMode)->fetchAll();
+        $result = static::query($dbQuery, $fetchMode)->fetchAll();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
-            $event = new SelectEvent($model, $dbQuery, $result, true);
+            $event = new SelectEvent(get_called_class(), $dbQuery, $result, true);
             Adapter::getEventDispatcher()->dispatch(Events::AFTER_SELECT, $event);
         }
 
@@ -688,13 +648,12 @@ class Model implements \Serializable
 
     /**
      * Cuenta el numero de registros devueltos en una consulta de tipo SELECT
-     *
-     * @param string $column
-     * @return integer
+     * @param \ActiveRecord\Query\DbQuery $query
+     * @return int
      */
-    public static function count()
+    public static function count(DbQuery $query = null)
     {
-        self::dbQuery()->columns("COUNT(*) AS n");
+        self::dbQuery($query)->columns("COUNT(*) AS n");
         return static::find(static::FETCH_OBJ)->n;
     }
 
@@ -873,11 +832,7 @@ class Model implements \Serializable
      */
     public static function paginate($page, $per_page = 10, $fetchMode = null)
     {
-        $model = new static();
-
-        $model->fetchMode($fetchMode);
-
-        return Paginator::paginate($model, self::dbQuery(), $page, $per_page);
+        return Paginator::paginate(self::dbQuery(), $page, $per_page, $fetchMode);
     }
 
     /**
@@ -1023,7 +978,7 @@ class Model implements \Serializable
     protected function hasAndBelongsToMany($model, $through, $fk = null, $key = null)
     {
         $fk || $fk = self::createTableName($model) . '_id';
-        $key || $key = $this->getTable() . '_id';
+        $key || $key = static::table() . '_id';
         self::$relations[get_called_class()]['hasAndBelongsToMany']
                 [$model] = compact('through', 'fk', 'key');
     }
@@ -1116,14 +1071,12 @@ class Model implements \Serializable
      */
     private static function dbQuery(DbQuery $query = null)
     {
-        static $dbQuery = null;
+        static $dbQuery;
 
-        if (null !== $query) {
+        if ($query) {
             $dbQuery = $query;
-        }
-
-        if (!$dbQuery) {
-            $dbQuery = new DbQuery(new static());
+        } elseif (!$dbQuery) {
+            return static::createQuery();
         }
 
         return $dbQuery;
