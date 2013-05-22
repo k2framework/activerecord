@@ -19,10 +19,10 @@ class SelectEvent extends Event
      */
     protected $dbQuery;
 
-    function __construct(Model $model, DbQuery $dbQuery, $result = null, $hasResult = false)
+    function __construct($modelClass, DbQuery $dbQuery, $result = null, $hasResult = false)
     {
         $this->dbQuery = $dbQuery;
-        parent::__construct($model, $result, $hasResult);
+        parent::__construct($modelClass, $result, $hasResult);
     }
 
     public function getParameters()

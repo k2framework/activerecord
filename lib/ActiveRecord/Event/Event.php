@@ -16,9 +16,9 @@ class Event extends Base
     protected $result;
     protected $hasResult;
 
-    function __construct(Model $model, $result = null, $hasResult = false)
+    function __construct($modelClass, $result = null, $hasResult = false)
     {
-        $this->model = $model;
+        $this->model = $modelClass;
     }
 
     public function getModel()
@@ -26,7 +26,7 @@ class Event extends Base
         return $this->model;
     }
 
-    public function setModel(Model $model)
+    public function setModel($model)
     {
         $this->model = $model;
     }
