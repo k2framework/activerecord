@@ -81,8 +81,12 @@ class DbPool
                 default:
                     $dsn = "{$config->getType()}:host={$config->getHost()};dbname={$config->getDbName()}";
             }
-            self::$connections[$config->getId()] = new PDO($dsn, $config->getUsername(),
-                            $config->getPassword(), self::$attributes);
+
+            if (!isset(self::$attributes[PDO::ATTR_STATEMENT_CLASS])) {
+                self::$attributes[PDO::ATTR_STATEMENT_CLASS] = array('ActiveRecord\\PDOStatement');
+            }
+
+            self::$connections[$config->getId()] = new PDO($dsn, $config->getUsername(), $config->getPassword(), self::$attributes);
 
             self::$connections[$config->getId()]
                     ->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
