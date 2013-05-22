@@ -76,26 +76,6 @@ class Model implements \Serializable
     protected static $connection = null;
 
     /**
-     * Esquema de datos
-     *
-     * @var string
-     */
-    protected static $schema = null;
-
-    /**
-     *
-     * @var Nombre de la tabla en la BD
-     */
-    protected static $table = null;
-
-    /**
-     * Objeto DbQuery para implementar chain
-     *
-     * @var Obj
-     */
-    private static $dbQuery = null;
-
-    /**
      *
      * @var array
      */
@@ -123,7 +103,7 @@ class Model implements \Serializable
      *
      * @return Metadata
      */
-    public function metadata()
+    public static function metadata()
     {
         static $metadata;
 
@@ -142,7 +122,7 @@ class Model implements \Serializable
      */
     public function dump($data)
     {
-        $validFields = $this->metadata()->getAttributesList();
+        $validFields = static::metadata()->getAttributesList();
         foreach ($data as $k => $v) {
             if (in_array($k, $validFields)) {
                 $this->$k = $v;
@@ -240,6 +220,11 @@ class Model implements \Serializable
         
     }
 
+    /**
+     * Establece el modo de devolución de los datos
+     * @param \PDOStatement $sts
+     * @param type $fetchMode
+     */
     private static function setFetchMode(\PDOStatement $sts, $fetchMode)
     {
         switch ($fetchMode) {
@@ -262,7 +247,7 @@ class Model implements \Serializable
     }
 
     /**
-     * Obtiene el nombre de la tabla que el modelo está representando.
+     * Obtiene/establece el nombre de la tabla que el modelo está representando.
      *
      * @return string
      */
@@ -285,20 +270,17 @@ class Model implements \Serializable
      * @param string $schema
      * @return ActiveRecord
      */
-    public function setSchema($schema)
+    public static function schema($name = null)
     {
-        $this->schema = $schema;
-        return $this;
-    }
+        static $schema;
 
-    /**
-     * Obtiene el esquema
-     *
-     * @return string
-     */
-    public function getSchema()
-    {
-        return $this->schema;
+        if ($name) {
+            $schema = $name;
+        } elseif (!$schema) {
+            $schema = null;
+        }
+
+        return $schema;
     }
 
     /**
@@ -316,7 +298,7 @@ class Model implements \Serializable
             $statement = Adapter::factory(static::$connection)
                     ->prepare($sql);
 
-            $statement->setFetchMode($fetchMode);
+            $this->setFetchMode($statement, $fetchMode);
 
             // Ejecuta la consulta
             $statement->execute($params);
@@ -339,12 +321,13 @@ class Model implements \Serializable
      */
     public static function query(DbQuery $dbQuery, $fetchMode = self::FETCH_MODEL)
     {
-        $dbQuery->table(static::table());
+        $dbQuery->table(static::table())->schema(static::schema());
 
-        // Asigna el esquema si existe
-//        if ($this->schema) {
-//            $dbQuery->schema($this->schema);
-//        }
+        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
+            $event = new SelectEvent(get_called_class(), $dbQuery);
+            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
+        }
+
         $statement = null;
         try {
             // Obtiene una instancia del adaptador y prepara la consulta
@@ -388,11 +371,6 @@ class Model implements \Serializable
     {
         $dbQuery = self::dbQuery()->select();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent(get_called_class(), $dbQuery);
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
-        }
-
         $result = static::query($dbQuery, $fetchMode)->fetch();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
@@ -413,11 +391,6 @@ class Model implements \Serializable
     {
         $dbQuery = self::dbQuery()->select();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_SELECT)) {
-            $event = new SelectEvent(get_called_class(), $dbQuery);
-            Adapter::getEventDispatcher()->dispatch(Events::BEFORE_SELECT, $event);
-        }
-
         $result = static::query($dbQuery, $fetchMode)->fetchAll();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_SELECT)) {
@@ -429,44 +402,48 @@ class Model implements \Serializable
     }
 
     /**
-     * Busca por medio de una columna especifica
-     *
-     * @param string $column columna de busqueda
-     * @param string $value valor para la busqueda
-     * @param string $fetchMode
-     * @return ActiveRecord
+     * Crea condiciones en el DbQuery a partir de un array
+     * @param \ActiveRecord\Query\DbQuery $q
+     * @param array $conditions
      */
-    public static function findBy($column, $value, $fetchMode = null)
+    private static function createConditions(DbQuery $q, array $conditions = array())
     {
-        static::createQuery()
-                ->where("$column = :value")
-                ->bindValue('value', $value);
+        $x = 0;
+        foreach ($conditions as $column => $value) {
+            if (is_array($value)) {
+                $q->where("$column IN (:v$v)")
+                        ->bindValue("v$x", "'" . join("','", $value) . "'");
+            } else {
+                $q->where("$column = :v$x")
+                        ->bindValue("v$x", $value);
+            }
+            ++$x;
+        }
+    }
+
+    /**
+     * Busca por una serie de campos pasados como array
+     * @param array $conditions
+     * @param string $fetchMode
+     * @return Model
+     */
+    public static function findBy(array $conditions = array(), $fetchMode = null)
+    {
+        self::createConditions(static::createQuery());
+
         return static::find($fetchMode);
     }
 
     /**
-     * Busca por medio de una columna especifica y obtiene todas la coincidencias
-     *
-     * @param string $column columna de busqueda
-     * @param string $value valor para la busqueda
+     * Busca por una serie de campos pasados como array y devuelve todas las coincidencias
+     * @param array $conditions
      * @param string $fetchMode
-     * @return ActiveRecord
+     * @return Model
      */
-    public static function findAllBy($column, $value, $fetchMode = null)
+    public static function findAllBy(array $conditions = array(), $fetchMode = null)
     {
-        if (is_array($value)) {
-            $query = static::createQuery();
-            $in = array();
-            foreach ($value as $k => $v) {
-                $in[] = ":in_$k";
-                $query->bindValue("in_$k", $v);
-            }
-            $query->where("$column IN (" . join(',', $in) . ")");
-        } else {
-            static::createQuery()
-                    ->where("$column = :value")
-                    ->bindValue('value', $value);
-        }
+        self::createConditions(static::createQuery());
+
         return static::findAll($fetchMode);
     }
 
@@ -479,9 +456,7 @@ class Model implements \Serializable
      */
     public static function findByPK($value, $fetchMode = null)
     {
-        $model = new static();
-
-        $pk = $model->metadata()->getPK();
+        $pk = static::metadata()->getPK();
 
         $query = static::createQuery()
                 ->select()
@@ -514,7 +489,7 @@ class Model implements \Serializable
         $data = array();
 
         // Itera en cada atributo
-        foreach ($this->metadata()->getAttributes() as $fieldName => $attr) {
+        foreach (static::metadata()->getAttributes() as $fieldName => $attr) {
 
             if (property_exists($this, $fieldName)) {
                 if ($this->$fieldName === '') {
@@ -558,31 +533,31 @@ class Model implements \Serializable
         }
 
         // Nuevo contenedor de consulta
-        $dbQuery = new DbQuery($this);
+        $dbQuery = static::createQuery();
 
         $data = $this->getTableValues();
 
-        if (isset($data[$this->metadata()->getPK()])) {
-            unset($data[$this->metadata()->getPK()]);
+        if (isset($data[static::metadata()->getPK()])) {
+            unset($data[static::metadata()->getPK()]);
         }
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_CREATE)) {
-            $event = new CreateOrUpdateEvent($this, $data);
+            $event = new CreateOrUpdateEvent(get_called_class(), $data);
             Adapter::getEventDispatcher()->dispatch(Events::BEFORE_CREATE, $event);
         }
 
         // Ejecuta la consulta
-        if ($this->query($dbQuery->insert($data))) {
+        if (static::query($dbQuery->insert($data))) {
 
             // Convenio patron identidad en activerecord si PK es "id"
-            if (is_string($pk = $this->metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
+            if (is_string($pk = static::metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
                 // Obtiene el ultimo id insertado y lo carga en el objeto
                 $this->$pk = Adapter::factory(static::$connection)
                                 ->pdo()->lastInsertId();
             }
 
             if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_CREATE)) {
-                $event = new CreateOrUpdateEvent($this, $data);
+                $event = new CreateOrUpdateEvent(get_called_class(), $data);
                 Adapter::getEventDispatcher()->dispatch(Events::AFTER_CREATE, $event);
             }
 
@@ -615,11 +590,9 @@ class Model implements \Serializable
      */
     public static function updateAll(DbQuery $query)
     {
-        $model = new static();
-
         // TODO: se debe verificar que el query creado es para actualizar.
         // Ejecuta la consulta
-        return $model->query($query)->rowCount();
+        return static::query($query)->rowCount();
     }
 
     /**
@@ -641,9 +614,8 @@ class Model implements \Serializable
      */
     public static function deleteAll(DbQuery $query)
     {
-        $model = new static();
         // Ejecuta la consulta
-        return $model->query($query->delete())->rowCount();
+        return static::query($query->delete())->rowCount();
     }
 
     /**
@@ -675,7 +647,7 @@ class Model implements \Serializable
     protected function wherePK(DbQuery $dbQuery)
     {
         // Obtiene la clave primaria
-        $pk = $this->metadata()->getPK();
+        $pk = static::metadata()->getPK();
 
         // Si es clave primaria compuesta
         if (is_array($pk)) {
@@ -744,15 +716,15 @@ class Model implements \Serializable
         $data = $this->getTableValues();
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_UPDATE)) {
-            $event = new CreateOrUpdateEvent($this, $data);
+            $event = new CreateOrUpdateEvent(get_called_class(), $data);
             Adapter::getEventDispatcher()->dispatch(Events::BEFORE_UPDATE, $event);
         }
 
         // Ejecuta la consulta con el query utilizado para el exists
-        if ($this->query($dbQuery->update($data))) {
+        if (static::query($dbQuery->update($data))) {
 
             if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_UPDATE)) {
-                $event = new CreateOrUpdateEvent($this, $data);
+                $event = new CreateOrUpdateEvent(get_called_class(), $data);
                 Adapter::getEventDispatcher()->dispatch(Events::AFTER_UPDATE, $event);
             }
 
@@ -778,13 +750,13 @@ class Model implements \Serializable
         $this->wherePK($dbQuery);
 
         if (Adapter::getEventDispatcher()->hasListeners(Events::BEFORE_DELETE)) {
-            $event = new Event($this);
+            $event = new Event(get_called_class());
             Adapter::getEventDispatcher()->dispatch(Events::BEFORE_DELETE, $event);
         }
         // Ejecuta la consulta con el query utilizado para el exists
-        if ($this->query($dbQuery->delete())) {
+        if (static::query($dbQuery->delete())) {
             if (Adapter::getEventDispatcher()->hasListeners(Events::AFTER_DELETE)) {
-                $event = new Event($this);
+                $event = new Event(get_called_class());
                 Adapter::getEventDispatcher()->dispatch(Events::AFTER_DELETE, $event);
             }
             return true;
@@ -886,7 +858,7 @@ class Model implements \Serializable
             $this->dump($data);
         }
 
-        if (is_string($pk = $this->metadata()->getPK()) && isset($this->$pk) && $this->exists()) {
+        if (is_string($pk = static::metadata()->getPK()) && isset($this->$pk) && $this->exists()) {
             return $this->update();
         } else {
             return $this->create();
@@ -933,7 +905,7 @@ class Model implements \Serializable
      */
     protected function belongsTo($model, $fk = null)
     {
-        $fk || $fk = $this->createTableName($model) . '_id';
+        $fk || $fk = self::createTableName($model) . '_id';
         self::$relations[get_called_class()]['belongsTo'][$model] = $fk;
     }
 
@@ -947,7 +919,7 @@ class Model implements \Serializable
      */
     protected function hasOne($model, $fk = null)
     {
-        $fk || $fk = $this->getTable() . "_id";
+        $fk || $fk = static::table() . "_id";
         self::$relations[get_called_class()]['hasOne'][$model] = $fk;
     }
 
@@ -961,7 +933,7 @@ class Model implements \Serializable
      */
     protected function hasMany($model, $fk = null)
     {
-        $fk || $fk = $this->getTable() . "_id";
+        $fk || $fk = static::table() . "_id";
         self::$relations[get_called_class()]['hasMany'][$model] = $fk;
     }
 
@@ -1005,7 +977,7 @@ class Model implements \Serializable
 
             $fk = self::$relations[get_called_class()]['belongsTo'][$model];
 
-            return $model::findBy($fk, $this->{$fk});
+            return $model::findBy(array($fk => $this->{$fk}));
         }
 
         if (isset(self::$relations[get_called_class()]['hasOne']) &&
@@ -1017,25 +989,26 @@ class Model implements \Serializable
 
             $fk = self::$relations[get_called_class()]['hasOne'][$model];
 
-            return $model::findBy(self::$metadata[$model]->getPK(), $this->{$fk});
+            return $model::findBy(array($model::metadata()->getPK() => $this->{$fk}));
         }
 
         if (isset(self::$relations[get_called_class()]['hasMany']) &&
                 isset(self::$relations[get_called_class()]['hasMany'][$model])) {
 
-            if (!isset($this->{$this->metadata()->getPK()})) {
+            if (!isset($this->{static::metadata()->getPK()})) {
                 return array();
             }
 
             $fk = self::$relations[get_called_class()]['hasMany'][$model];
 
-            return $model::findAllBy($fk, $this->{$this->metadata()->getPK()});
+            $pk = $this->{static::metadata()->getPK()};
+            return $model::findAllBy(array($fk => $pk));
         }
 
         if (isset(self::$relations[get_called_class()]['hasAndBelongsToMany']) &&
                 isset(self::$relations[get_called_class()]['hasAndBelongsToMany'][$model])) {
 
-            $pk1 = $this->metadata()->getPK();
+            $pk1 = static::metadata()->getPK();
 
             if (!isset($this->{$pk1})) {
                 return array();
@@ -1043,14 +1016,12 @@ class Model implements \Serializable
 
             $relation = self::$relations[get_called_class()]['hasAndBelongsToMany'][$model];
 
-            $instance = new $model();
-
             $fk = $relation['fk'];
             $key = $relation['key'];
-            $pk2 = $instance->metadata()->getPK();
-            $thisTable = $this->getTable();
-            $modelTable = $this->createTableName($model);
-            $through = $this->createTableName($relation['through']);
+            $pk2 = $model::metadata()->getPK();
+            $thisTable = static::table();
+            $modelTable = self::createTableName($model);
+            $through = self::createTableName($relation['through']);
 
             $model::createQuery()
                     ->select("$modelTable.*")
@@ -1115,7 +1086,7 @@ class Model implements \Serializable
      */
     public function serialize()
     {
-        $data = array_intersect_key(get_object_vars($this), $this->metadata()->getAttributes());
+        $data = array_intersect_key(get_object_vars($this), static::metadata()->getAttributes());
         return serialize($data);
     }
 
