@@ -368,15 +368,10 @@ class Model implements \Serializable
     public static function find($fetchMode = self::FETCH_MODEL)
     {
         $dbQuery = static::dbQuery()->select();
+        
         $statement = static::query($dbQuery, $fetchMode);
-        $result = $statement->fetch();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
-            $event = new QueryEvent(get_called_class(), $statement, $result, true);
-            Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
-        }
-
-        return $result;
+        return static::dispatchQueryEvent($statement, $statement->fetch());
     }
 
     /**
@@ -390,14 +385,8 @@ class Model implements \Serializable
         $dbQuery = static::dbQuery()->select();
 
         $statement = static::query($dbQuery, $fetchMode);
-        $result = $statement->fetchAll();
 
-        if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
-            $event = new QueryEvent(get_called_class(), $statement, $result, true);
-            Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
-        }
-
-        return $result;
+        return static::dispatchQueryEvent($statement, $statement->fetchAll());
     }
 
     /**
@@ -554,10 +543,8 @@ class Model implements \Serializable
                                 ->pdo()->lastInsertId();
             }
 
-            if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
-                $event = new QueryEvent(get_called_class(), $statement, $this, true);
-                Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
-            }
+            static::dispatchQueryEvent($statement, $this);
+            
             if (Adapter::getEventDispatcher()->hasListeners(Events::CREATE)) {
                 $event = new CreateOrUpdateEvent(get_called_class(), $this);
                 Adapter::getEventDispatcher()->dispatch(Events::CREATE, $event);
@@ -594,7 +581,13 @@ class Model implements \Serializable
     {
         // TODO: se debe verificar que el query creado es para actualizar.
         // Ejecuta la consulta
-        return static::query($query)->rowCount();
+        $statement = static::query($query);
+
+        $count = $statement->rowCount();
+
+        static::dispatchQueryEvent($statement, $this);
+
+        return $count;
     }
 
     /**
@@ -617,7 +610,9 @@ class Model implements \Serializable
     public static function deleteAll(DbQuery $query)
     {
         // Ejecuta la consulta
-        return static::query($query->delete())->rowCount();
+        $statement = static::query($query->delete());
+
+        return static::dispatchQueryEvent($statement, $statement->rowCount());
     }
 
     /**
@@ -719,10 +714,8 @@ class Model implements \Serializable
         // Ejecuta la consulta con el query utilizado para el exists
         if ($statement = static::query($dbQuery->update($data))) {
 
-            if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
-                $event = new QueryEvent(get_called_class(), $statement, $this, true);
-                Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
-            }
+            static::dispatchQueryEvent($statement, $this);
+            
             if (Adapter::getEventDispatcher()->hasListeners(Events::UPDATE)) {
                 $event = new CreateOrUpdateEvent(get_called_class(), $this);
                 Adapter::getEventDispatcher()->dispatch(Events::UPDATE, $event);
@@ -1093,6 +1086,16 @@ class Model implements \Serializable
     public function unserialize($serialized)
     {
         $this->__construct(unserialize($serialized));
+    }
+
+    protected static function dispatchQueryEvent(PDOStatement $statement, $result)
+    {
+        if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
+            $event = new QueryEvent(get_called_class(), $statement, $result);
+            Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
+        }
+
+        return $result;
     }
 
 }
