@@ -30,6 +30,7 @@ use ActiveRecord\DbPool\DbPool;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Config\Parameters;
 use K2\EventDispatcher\EventDispatcher;
+use ActiveRecord\Exception\SqlException;
 
 /**
  * \ActiveRecord\Adapter\Adapter
@@ -350,11 +351,19 @@ abstract class Adapter
      */
     public function execute(DbQuery $query)
     {
-        $statement = $this->pdo()->query($this->query($query));
+        try {
+            $statement = $this->pdo()->query($this->query($query));
 
-        $statement->execute($query->getBind());
+            $statement->execute($query->getBind());
 
-        return $statement;
+            return $statement;
+        } catch (\PDOException $e) {
+            if ($statement instanceof \PDOStatement) {
+                throw new SqlException($e, $statement);
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
