@@ -33,6 +33,7 @@ use ActiveRecord\Event\QueryEvent;
 use ActiveRecord\Paginator\Paginator;
 use ActiveRecord\Exception\SqlException;
 use ActiveRecord\Event\CreateOrUpdateEvent;
+use ActiveRecord\Exception\NotFoundException;
 use ActiveRecord\Exception\ActiveRecordException;
 
 /**
@@ -368,7 +369,7 @@ class Model implements \Serializable
     public static function find($fetchMode = self::FETCH_MODEL)
     {
         $dbQuery = static::dbQuery()->select();
-        
+
         $statement = static::query($dbQuery, $fetchMode);
 
         return static::dispatchQueryEvent($statement, $statement->fetch());
@@ -447,7 +448,7 @@ class Model implements \Serializable
      * @param string $fetchMode
      * @return Model
      */
-    public static function findByPK($value, $fetchMode = null)
+    public static function findByPK($value, $throw = true, $fetchMode = null)
     {
         $pk = static::metadata()->getPK();
 
@@ -456,7 +457,13 @@ class Model implements \Serializable
                 ->where("$pk = :pk")
                 ->bindValue('pk', $value);
         // Realiza la busqueda y retorna el objeto ActiveRecord
-        return static::find($fetchMode);
+        $result = static::find($fetchMode);
+
+        if (!$result && $throw) {
+            throw new NotFoundException('No existe un registro en ' . static::table() . " con {$pk} = {$value}");
+        }
+
+        return $result;
     }
 
     /**
@@ -466,9 +473,9 @@ class Model implements \Serializable
      * @param int $id
      * @return Model
      */
-    public static function findByID($id, $fetchMode = null)
+    public static function findByID($id, $throw = true, $fetchMode = null)
     {
-        return static::findByPK((int) $id, $fetchMode);
+        return static::findByPK((int) $id, $throw, $fetchMode);
     }
 
     /**
@@ -544,7 +551,7 @@ class Model implements \Serializable
             }
 
             static::dispatchQueryEvent($statement, $this);
-            
+
             if (Adapter::getEventDispatcher()->hasListeners(Events::CREATE)) {
                 $event = new CreateOrUpdateEvent(get_called_class(), $this);
                 Adapter::getEventDispatcher()->dispatch(Events::CREATE, $event);
@@ -715,7 +722,7 @@ class Model implements \Serializable
         if ($statement = static::query($dbQuery->update($data))) {
 
             static::dispatchQueryEvent($statement, $this);
-            
+
             if (Adapter::getEventDispatcher()->hasListeners(Events::UPDATE)) {
                 $event = new CreateOrUpdateEvent(get_called_class(), $this);
                 Adapter::getEventDispatcher()->dispatch(Events::UPDATE, $event);
