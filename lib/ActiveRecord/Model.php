@@ -960,7 +960,7 @@ class Model
                 return null;
             }
 
-            return $model::findBy(array($fk => $this->{$fk}) + $conditions);
+            return $config['model']::findBy(array($fk => $this->{$fk}) + $conditions);
         }
 
         if ($config = Relations::get(get_called_class(), $name, Relations::HAS_ONE)) {
@@ -973,7 +973,7 @@ class Model
 
             $conditions = array($config['model']::metadata()->getPK() => $this->{$fk}) + $conditions;
 
-            return $model::findBy($conditions);
+            return $config['model']::findBy($conditions);
         }
 
         if ($config = Relations::get(get_called_class(), $name, Relations::HAS_MANY)) {
