@@ -1019,6 +1019,12 @@ class Model
 
     public function __call($name, $arguments)
     {
+        if (0 !== strpos($name, 'get')) {
+            return;
+        }
+        
+        $name = lcfirst(substr($name, 3));
+        
         if (count($arguments)) {
             $arguments = current($arguments);
         } else {
