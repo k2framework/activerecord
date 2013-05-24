@@ -12,28 +12,6 @@ class QueryEvent extends Event
     const DELETE = 'DELETE';
     const SELECT = 'SELECT';
 
-    /**
-     *
-     * @var PDOStatement
-     */
-    protected $statement;
-    protected $queryType;
-
-    function __construct($modelClass, PDOStatement $statement, $result = null)
-    {
-        $this->statement = $statement;
-        parent::__construct($modelClass, $result, true);
-    }
-
-    /**
-     * 
-     * @return type
-     */
-    public function getStatement()
-    {
-        return $this->statement;
-    }
-
     public function getQueryType()
     {
         if (!$this->queryType) {

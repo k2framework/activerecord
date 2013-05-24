@@ -553,7 +553,7 @@ class Model
             static::dispatchQueryEvent($statement, $this);
 
             if (Adapter::getEventDispatcher()->hasListeners(Events::CREATE)) {
-                $event = new CreateOrUpdateEvent(get_called_class(), $this);
+                $event = new CreateOrUpdateEvent(get_called_class(), $statement, $this);
                 Adapter::getEventDispatcher()->dispatch(Events::CREATE, $event);
             }
 
@@ -724,7 +724,7 @@ class Model
             static::dispatchQueryEvent($statement, $this);
 
             if (Adapter::getEventDispatcher()->hasListeners(Events::UPDATE)) {
-                $event = new CreateOrUpdateEvent(get_called_class(), $this);
+                $event = new CreateOrUpdateEvent(get_called_class(), $statement, $this);
                 Adapter::getEventDispatcher()->dispatch(Events::UPDATE, $event);
             }
 
@@ -749,9 +749,9 @@ class Model
         // Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
         // Ejecuta la consulta con el query utilizado para el exists
-        if (static::query($dbQuery->delete())) {
+        if ($statement = static::query($dbQuery->delete())) {
             if (Adapter::getEventDispatcher()->hasListeners(Events::DELETE)) {
-                $event = new Event(get_called_class());
+                $event = new Event(get_called_class(), $statement);
                 Adapter::getEventDispatcher()->dispatch(Events::DELETE, $event);
             }
             return true;

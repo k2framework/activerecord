@@ -3,6 +3,7 @@
 namespace ActiveRecord\Event;
 
 use ActiveRecord\Model;
+use ActiveRecord\PDOStatement;
 use K2\EventDispatcher\Event as Base;
 
 class Event extends Base
@@ -15,18 +16,35 @@ class Event extends Base
     protected $model;
     protected $result;
 
-    function __construct($modelClass, $result = null)
+    /**
+     *
+     * @var PDOStatement
+     */
+    protected $statement;
+    protected $queryType;
+
+    function __construct($modelClass, PDOStatement $statement, $result = null)
     {
         $this->model = $modelClass;
+        $this->statement = $statement;
         $this->result = $result;
     }
 
-    public function getModel()
+    /**
+     * 
+     * @return type
+     */
+    public function getStatement()
+    {
+        return $this->statement;
+    }
+
+    public function getModelClass()
     {
         return $this->model;
     }
 
-    public function setModel($model)
+    public function setModelClass($model)
     {
         $this->model = $model;
     }
