@@ -1,6 +1,0 @@
-[submodule "lib/vendor/KumbiaPHP/Di"]
-	path = lib/vendor/KumbiaPHP/Di
-	url = git://github.com/manuelj555/DependencyInjection.git
-[submodule "lib/vendor/KumbiaPHP/EventDispatcher"]
-	path = lib/vendor/KumbiaPHP/EventDispatcher
-	url = git://github.com/manuelj555/EventDispatcher.git
