@@ -789,7 +789,7 @@ class Model
      * @param int $page numero página a devolver
      * @param int $per_page registros por página
      * @param string $fetchMode como serán devueltos los registros (array, model, obj)
-     * @return array 
+     * @return Paginator\Result 
      */
     public static function paginate($page, $per_page = 10, $fetchMode = null)
     {
