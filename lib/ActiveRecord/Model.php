@@ -24,6 +24,7 @@
 namespace ActiveRecord;
 
 use \PDO;
+use ActiveRecord\Relations;
 use ActiveRecord\Event\Event;
 use ActiveRecord\Event\Events;
 use ActiveRecord\Query\DbQuery;
@@ -76,12 +77,6 @@ class Model
     protected static $connection = null;
 
     /**
-     *
-     * @var array
-     */
-    private static $relations = array();
-
-    /**
      * Constructor de la class
      *
      * @param array $data
@@ -92,8 +87,8 @@ class Model
             $this->dump($data);
         }
         $this->initialize();
-        if (!isset(self::$relations[get_called_class()])) {
-            self::$relations[get_called_class()] = array();
+        if (!Relations::has(get_called_class())) {
+            Relations::setLoaded(get_called_class());
             $this->createRelations();
         }
     }
@@ -228,20 +223,20 @@ class Model
     private static function setFetchMode(\PDOStatement $sts, $fetchMode)
     {
         switch ($fetchMode) {
-            // Obtener arrays
+// Obtener arrays
             case static::FETCH_ARRAY:
                 $sts->setFetchMode(PDO::FETCH_ASSOC);
                 break;
 
-            // Obtener instancias de objetos simples
+// Obtener instancias de objetos simples
             case static::FETCH_OBJ:
                 $sts->setFetchMode(PDO::FETCH_OBJ);
                 break;
 
-            // Obtener instancias del mismo modelo
+// Obtener instancias del mismo modelo
             case static::FETCH_MODEL:
             default:
-                // Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
+// Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
                 $sts->setFetchMode(PDO::FETCH_CLASS, get_called_class());
         }
     }
@@ -300,7 +295,7 @@ class Model
 
             $this->setFetchMode($statement, $fetchMode);
 
-            // Ejecuta la consulta
+// Ejecuta la consulta
             $statement->execute($params);
             return $statement;
         } catch (\PDOException $e) {
@@ -327,14 +322,14 @@ class Model
 
         $statement = null;
         try {
-            // Obtiene una instancia del adaptador y prepara la consulta
+// Obtiene una instancia del adaptador y prepara la consulta
             $statement = Adapter::factory(static::$connection)
                     ->prepareDbQuery($dbQuery);
 
-            // Indica el modo de obtener los datos en el ResultSet
+// Indica el modo de obtener los datos en el ResultSet
             self::setFetchMode($statement, $fetchMode);
 
-            // Ejecuta la consulta
+// Ejecuta la consulta
             $statement->execute($dbQuery->getBind());
             return $statement;
         } catch (\PDOException $e) {
@@ -355,7 +350,7 @@ class Model
     public static function createQuery()
     {
         $a = get_called_class();
-        // Crea la instancia de DbQuery
+// Crea la instancia de DbQuery
         return static::dbQuery(new DbQuery(get_called_class()));
     }
 
@@ -455,7 +450,7 @@ class Model
                 ->select()
                 ->where("$pk = :pk")
                 ->bindValue('pk', $value);
-        // Realiza la busqueda y retorna el objeto ActiveRecord
+// Realiza la busqueda y retorna el objeto ActiveRecord
         $result = static::find($fetchMode);
 
         if (!$result && $throw) {
@@ -487,7 +482,7 @@ class Model
     {
         $data = array();
 
-        // Itera en cada atributo
+// Itera en cada atributo
         foreach (static::metadata()->getAttributes() as $fieldName => $attr) {
 
             if (property_exists($this, $fieldName)) {
@@ -516,22 +511,22 @@ class Model
      */
     public function create($data = null)
     {
-        // Si es un array, se cargan los atributos en el objeto
+// Si es un array, se cargan los atributos en el objeto
         if (is_array($data)) {
             $this->dump($data);
         }
 
-        // Callback antes de crear
+// Callback antes de crear
         if (false === $this->beforeCreate() || false === $this->beforeSave()) {
             return false;
         }
 
-        // Callback de validaciónes
+// Callback de validaciónes
         if (false === $this->validate(false)) {
             return false;
         }
 
-        // Nuevo contenedor de consulta
+// Nuevo contenedor de consulta
         $dbQuery = static::createQuery();
 
         $data = $this->getTableValues();
@@ -539,12 +534,12 @@ class Model
         if (isset($data[static::metadata()->getPK()])) {
             unset($data[static::metadata()->getPK()]);
         }
-        // Ejecuta la consulta
+// Ejecuta la consulta
         if ($statement = static::query($dbQuery->insert($data))) {
 
-            // Convenio patron identidad en activerecord si PK es "id"
+// Convenio patron identidad en activerecord si PK es "id"
             if (is_string($pk = static::metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
-                // Obtiene el ultimo id insertado y lo carga en el objeto
+// Obtiene el ultimo id insertado y lo carga en el objeto
                 $this->$pk = Adapter::factory(static::$connection)
                                 ->pdo()->lastInsertId();
             }
@@ -556,7 +551,7 @@ class Model
                 Adapter::getEventDispatcher()->dispatch(Events::CREATE, $event);
             }
 
-            // Callback despues de crear
+// Callback despues de crear
             $this->afterCreate();
             $this->afterSave();
             return true;
@@ -585,8 +580,8 @@ class Model
      */
     public static function updateAll(DbQuery $query)
     {
-        // TODO: se debe verificar que el query creado es para actualizar.
-        // Ejecuta la consulta
+// TODO: se debe verificar que el query creado es para actualizar.
+// Ejecuta la consulta
         $statement = static::query($query);
 
         $count = $statement->rowCount();
@@ -615,7 +610,7 @@ class Model
      */
     public static function deleteAll(DbQuery $query)
     {
-        // Ejecuta la consulta
+// Ejecuta la consulta
         $statement = static::query($query->delete());
 
         return static::dispatchQueryEvent($statement, $statement->rowCount());
@@ -649,10 +644,10 @@ class Model
      */
     protected function wherePK(DbQuery $dbQuery)
     {
-        // Obtiene la clave primaria
+// Obtiene la clave primaria
         $pk = static::metadata()->getPK();
 
-        // Si es clave primaria compuesta
+// Si es clave primaria compuesta
         if (is_array($pk)) {
             foreach ($pk as $k) {
                 if (!isset($this->$k)) {
@@ -677,7 +672,7 @@ class Model
      */
     public function exists()
     {
-        // Establece condicion de busqueda con clave primaria
+// Establece condicion de busqueda con clave primaria
         $this->wherePK(static::dbQuery());
 
         return $this->existsOne();
@@ -691,33 +686,33 @@ class Model
      */
     public function update($data = null)
     {
-        // Si es un array, se cargan los atributos en el objeto
+// Si es un array, se cargan los atributos en el objeto
         if (is_array($data)) {
             $this->dump($data);
         }
 
-        // Callback antes de actualizar
+// Callback antes de actualizar
         if (false === $this->beforeUpdate() || false === $this->beforeSave()) {
             return false;
         }
 
-        // Callback de validaciónes
+// Callback de validaciónes
         if (false === $this->validate(true)) {
             return false;
         }
 
-        // Si no existe el registro
+// Si no existe el registro
         if (!$this->exists()) {
             return false;
         }
 
-        // Objeto de consulta
+// Objeto de consulta
         $dbQuery = new DbQuery($this);
-        // Establece condicion de busqueda con clave primaria
+// Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
 
         $data = $this->getTableValues();
-        // Ejecuta la consulta con el query utilizado para el exists
+// Ejecuta la consulta con el query utilizado para el exists
         if ($statement = static::query($dbQuery->update($data))) {
 
             static::dispatchQueryEvent($statement, $this);
@@ -727,7 +722,7 @@ class Model
                 Adapter::getEventDispatcher()->dispatch(Events::UPDATE, $event);
             }
 
-            // Callback despues de actualizar
+// Callback despues de actualizar
             $this->afterUpdate();
             $this->afterSave();
             return true;
@@ -743,11 +738,11 @@ class Model
      */
     public function delete()
     {
-        // Objeto de consulta
+// Objeto de consulta
         $dbQuery = new DbQuery($this);
-        // Establece condicion de busqueda con clave primaria
+// Establece condicion de busqueda con clave primaria
         $this->wherePK($dbQuery);
-        // Ejecuta la consulta con el query utilizado para el exists
+// Ejecuta la consulta con el query utilizado para el exists
         if ($statement = static::query($dbQuery->delete())) {
             if (Adapter::getEventDispatcher()->hasListeners(Events::DELETE)) {
                 $event = new Event(get_called_class(), $statement);
@@ -767,10 +762,10 @@ class Model
      */
     public static function deleteByPK($value)
     {
-        //creo el objeto:
+//creo el objeto:
         $model = static::findByPK($value);
 
-        // Ejecuta la consulta con el query utilizado para el exists
+// Ejecuta la consulta con el query utilizado para el exists
         if ($model->delete()) {
             return true;
         }
@@ -897,10 +892,10 @@ class Model
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foránea)
      */
-    protected function belongsTo($model, $fk = null)
+    protected function belongsTo($name, $model, $fk = null)
     {
         $fk || $fk = self::createTableName($model) . '_id';
-        self::$relations[get_called_class()]['belongsTo'][$model] = $fk;
+        Relations::belongsTo(get_called_class(), $name, $model, $fk);
     }
 
     /**
@@ -911,10 +906,10 @@ class Model
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foránea)
      */
-    protected function hasOne($model, $fk = null)
+    protected function hasOne($name, $model, $fk = null)
     {
         $fk || $fk = static::table() . "_id";
-        self::$relations[get_called_class()]['hasOne'][$model] = $fk;
+        Relations::hasOne(get_called_class(), $name, $model, $fk);
     }
 
     /**
@@ -925,10 +920,10 @@ class Model
      * model : nombre del modelo al que se refiere
      * fk : campo por el cual se relaciona (llave foránea)
      */
-    protected function hasMany($model, $fk = null)
+    protected function hasMany($name, $model, $fk = null)
     {
         $fk || $fk = static::table() . "_id";
-        self::$relations[get_called_class()]['hasMany'][$model] = $fk;
+        Relations::hasMany(get_called_class(), $name, $model, $fk);
     }
 
     /**
@@ -941,66 +936,60 @@ class Model
      * key: campo llave que identifica al propio modelo
      * through : através de que tabla
      */
-    protected function hasAndBelongsToMany($model, $through, $fk = null, $key = null)
+    protected function hasAndBelongsToMany($name, $model, $through, $fk = null, $key = null)
     {
         $fk || $fk = self::createTableName($model) . '_id';
         $key || $key = static::table() . '_id';
-        self::$relations[get_called_class()]['hasAndBelongsToMany']
-                [$model] = compact('through', 'fk', 'key');
+        Relations::hasAndBelongsToMany(get_called_class(), $name, $model, $through, $fk, $key);
     }
 
     /**
      * Devuelve los registros del modelo al que se está asociado.
      *
-     * @param string $model nombre del modelo asociado
+     * @param string $name nombre de la relación
      * @return array|null|false si existen datos devolverá un array,
      * null si no hay datos asociados aun, y false si no existe ninguna asociación.
      */
-    public function get($model)
+    public function get($name, array $conditions = array())
     {
-        if (!isset(self::$relations[get_called_class()])) {
-            return false;
-        }
+        if ($config = Relations::get(get_called_class(), $name, Relations::BELONGS_TO)) {
 
-        if (isset(self::$relations[get_called_class()]['belongsTo']) &&
-                isset(self::$relations[get_called_class()]['belongsTo'][$model])) {
+            $fk = $config['fk'];
 
             if (!isset($this->{$fk})) {
-                return false;
+                return null;
             }
 
-            $fk = self::$relations[get_called_class()]['belongsTo'][$model];
-
-            return $model::findBy(array($fk => $this->{$fk}));
+            return $model::findBy(array($fk => $this->{$fk}) + $conditions);
         }
 
-        if (isset(self::$relations[get_called_class()]['hasOne']) &&
-                isset(self::$relations[get_called_class()]['hasOne'][$model])) {
+        if ($config = Relations::get(get_called_class(), $name, Relations::HAS_ONE)) {
+
+            $fk = $config['fk'];
 
             if (!isset($this->{$fk})) {
-                return false;
+                return null;
             }
 
-            $fk = self::$relations[get_called_class()]['hasOne'][$model];
+            $conditions = array($config['model']::metadata()->getPK() => $this->{$fk}) + $conditions;
 
-            return $model::findBy(array($model::metadata()->getPK() => $this->{$fk}));
+            return $model::findBy($conditions);
         }
 
-        if (isset(self::$relations[get_called_class()]['hasMany']) &&
-                isset(self::$relations[get_called_class()]['hasMany'][$model])) {
+        if ($config = Relations::get(get_called_class(), $name, Relations::HAS_MANY)) {
 
             if (!isset($this->{static::metadata()->getPK()})) {
                 return array();
             }
 
-            $fk = self::$relations[get_called_class()]['hasMany'][$model];
+            $fk = $config['fk'];
 
             $pk = $this->{static::metadata()->getPK()};
-            return $model::findAllBy(array($fk => $pk));
+
+            return $model::findAllBy(array($fk => $pk) + $conditions);
         }
 
-        if (isset(self::$relations[get_called_class()]['hasAndBelongsToMany']) &&
-                isset(self::$relations[get_called_class()]['hasAndBelongsToMany'][$model])) {
+        if ($config = Relations::get(get_called_class(), $name, Relations::HAS_AND_BELONGS_TO_MANY)) {
 
             $pk1 = static::metadata()->getPK();
 
@@ -1008,26 +997,34 @@ class Model
                 return array();
             }
 
-            $relation = self::$relations[get_called_class()]['hasAndBelongsToMany'][$model];
-
-            $fk = $relation['fk'];
-            $key = $relation['key'];
-            $pk2 = $model::metadata()->getPK();
+            $fk = $config['fk'];
+            $key = $config['key'];
+            $pk2 = $config['model']::metadata()->getPK();
             $thisTable = static::table();
-            $modelTable = $model::table();
-            $through = $relation['through']::table();
+            $modelTable = $config['model']::table();
+            $through = $config['through']::table();
 
-            $model::createQuery()
+            $query = $config['model']::createQuery()
                     ->select("$modelTable.*")
                     ->join("$through as th", "th.{$fk} = {$modelTable}.{$pk2}")
-                    //->join("$thisTable as this", "this.{$pk1} = th.{$key}")
                     ->where("th.{$key} = :pk")
-                    //->where("this.{$pk1} = :pk")
                     ->bindValue('pk', $this->{$pk1});
 
-            return $model::findAll();
+            static::createConditions($query, $conditions);
+
+            return $config['model']::findAll();
         }
-        throw new ActiveRecordException("No existe la asociacion con $model en el modelo " . get_called_class());
+        throw new ActiveRecordException("No existe la asociacion de nombre $model en el modelo " . get_called_class());
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (count($arguments)) {
+            $arguments = current($arguments);
+        } else {
+            $arguments = array();
+        }
+        return $this->get($name, $arguments);
     }
 
     /**
