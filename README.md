@@ -53,7 +53,7 @@ class Usuarios extends Model
 
 Ahora nuestra clase usuario posee todos los métodos básicos para el acceso y comunicación con nuestra base de datos.
 por defecto el nombre de la tabla es el nombre del módelo en notación small_case, sin embargo para casos donde no se
-pueda cumpliar la conversión, podemos especificar el nombre de la tabla como un atributo de la clase, ejemplo:
+pueda cumpliar la conversión, podemos especificar el nombre de la tabla reescribiendo el método initialize del modelo, ejemplo:
 
 ```php
 
@@ -63,8 +63,10 @@ use ActiveRecord\Model;
 
 class Usuarios extends Model
 {
-    //La tabla en la base de datos se llama users
-    protected $table = 'users';
+    protected function initialize()
+    {
+        static::table('usuarios');
+    }
 }
 
 ?>
@@ -113,7 +115,8 @@ consultas SQL de manera orientada a Objetos.
 
 Usuarios::createQuery()
     ->where("nombres = :nom")
-    ->bindValue("nom", "Manuel José");
+    ->bindValue("nom", "Manuel José")
+    ;//->findAll(); //podemos llamar a findAll desde el DbQuery ó hacerlo desde la clase.
 
 //ya que el active record trabaja con PDO, y este permite crear consultas preparadas, es decir, los valores
 //de variables no se colocan directamente en la cadena de consulta, sino que se pasan a traves de métodos

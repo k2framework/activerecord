@@ -137,7 +137,7 @@ ActiveRecord también nos permite consutlar registros existentes, actualizarlos 
 	<?php
 
 	//Consultar la persona con id=1
-	$persona = Personas::first(1);
+	$persona = Personas::findByID(1);
 
 	//Cambiar su estado civil
 	$persona->estado_civil = 'Soltero';
@@ -146,14 +146,14 @@ ActiveRecord también nos permite consutlar registros existentes, actualizarlos 
 	$persona->save();
 
 	//Consultar todas las personas Bolivianas
-	foreach (Personas::findAllBy('nacionalidad', 'Boliviano') as $persona) {
+	foreach (Personas::findAllBy(array('nacionalidad' => 'Boliviano')) as $persona) {
 		echo $persona->nombres;
 	}
 
 	//Eliminar todas las personas Casadas
-	Personas::createQuery()
+	$query = Personas::createQuery()
 				->where('estado_civil = :edo_civil')
 				->bindValue('edo_civil', 'Casado');
 	
-	Personas::deleteAll();
+	Personas::deleteAll($query);
 
