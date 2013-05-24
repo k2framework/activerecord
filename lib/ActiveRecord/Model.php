@@ -29,7 +29,6 @@ use ActiveRecord\Event\Events;
 use ActiveRecord\Query\DbQuery;
 use ActiveRecord\Adapter\Adapter;
 use ActiveRecord\Metadata\Metadata;
-use ActiveRecord\Event\QueryEvent;
 use ActiveRecord\Paginator\Paginator;
 use ActiveRecord\Exception\SqlException;
 use ActiveRecord\Event\CreateOrUpdateEvent;
@@ -1097,7 +1096,7 @@ class Model
     protected static function dispatchQueryEvent(PDOStatement $statement, $result)
     {
         if (Adapter::getEventDispatcher()->hasListeners(Events::QUERY)) {
-            $event = new QueryEvent(get_called_class(), $statement, $result);
+            $event = new Event(get_called_class(), $statement, $result);
             Adapter::getEventDispatcher()->dispatch(Events::QUERY, $event);
         }
 

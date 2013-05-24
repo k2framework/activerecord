@@ -30,6 +30,9 @@ class PDOStatement extends Base
     public function getSqlQuery()
     {
         if (!$this->sql) {
+            $this->parameters = array_map(function($param) {
+                        return "'$param'";
+                    }, $this->parameters);
             $this->sql = strtr($this->queryString, (array) $this->parameters);
         }
 

@@ -9,6 +9,11 @@ use K2\EventDispatcher\Event as Base;
 class Event extends Base
 {
 
+    const INSERT = 'INSERT';
+    const UPDATE = 'UPDATE';
+    const DELETE = 'DELETE';
+    const SELECT = 'SELECT';
+
     /**
      *
      * @var Model
@@ -52,6 +57,35 @@ class Event extends Base
     public function getResult()
     {
         return $this->result;
+    }
+
+    public function getQueryType()
+    {
+        if (!$this->queryType) {
+            $sql = trim($this->statement->queryString);
+            preg_match('/^(\w+)/', $sql, $matches);
+            $command = strtolower($matches[0]);
+            switch ($command) {
+                case 'select':
+                    $this->queryType = self::SELECT;
+                    break;
+                case 'insert':
+                    $this->queryType = self::INSERT;
+                    break;
+                case 'create':
+                    $this->queryType = self::INSERT;
+                    break;
+                case 'update':
+                    $this->queryType = self::UPDATE;
+                    break;
+                case 'delete':
+                    $this->queryType = self::DELETE;
+                    break;
+                default :
+                    $this->queryType = null;
+            }
+        }
+        return $this->queryType;
     }
 
 }
