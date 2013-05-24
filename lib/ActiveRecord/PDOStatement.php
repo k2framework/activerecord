@@ -31,7 +31,7 @@ class PDOStatement extends Base
     {
         if (!$this->sql) {
             $this->parameters = array_map(function($param) {
-                        return "'$param'";
+                        return "'" . addslashes($param) . "'";
                     }, (array) $this->parameters);
             $this->sql = strtr($this->queryString, (array) $this->parameters);
         }
