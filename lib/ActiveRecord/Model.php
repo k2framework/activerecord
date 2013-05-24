@@ -986,7 +986,7 @@ class Model
 
             $pk = $this->{static::metadata()->getPK()};
 
-            return $model::findAllBy(array($fk => $pk) + $conditions);
+            return $config['model']::findAllBy(array($fk => $pk) + $conditions);
         }
 
         if ($config = Relations::get(get_called_class(), $name, Relations::HAS_AND_BELONGS_TO_MANY)) {
