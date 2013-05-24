@@ -24,6 +24,7 @@ namespace ActiveRecord\Paginator;
 
 use ActiveRecord\Model;
 use ActiveRecord\Query\DbQuery;
+use ActiveRecord\Paginator\Result;
 
 /**
  * ActiveRecord\Paginator\Paginator
@@ -69,7 +70,7 @@ class Paginator
      *  $page = paginate('Usuario', 'sexo="F"' , 'per_page: 5', "page: $page_num"); <br>
      *  $page = paginate($this->Usuario, 'conditions: sexo="F"' , 'per_page: 5', "page: $page_num"); <br>
      *
-     * @return object
+     * @return Result
      * */
     public static function paginate(DbQuery $query, $page, $per_page, $fetchMode = Model::FETCH_MODEL)
     {
@@ -87,18 +88,7 @@ class Paginator
 
         $items = $model::query($query, $fetchMode)->fetchAll();
 
-        $object = new \stdClass();
-
-        $object->next = ($offset + $per_page) < $numItems ? ($page + 1) : FALSE;
-        $object->prev = ($page > 1) ? ($page - 1) : FALSE;
-        $object->current = $page;
-        $object->total = ceil($numItems / $per_page);
-        $object->count = $numItems;
-        $object->per_page = $per_page;
-
-        $object->items = $items;
-
-        return $object;
+        return new Result($items, $numItems, $page, $per_page);
     }
 
 }
