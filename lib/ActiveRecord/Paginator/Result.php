@@ -27,11 +27,12 @@ class Result implements \Iterator
         $this->currentPage = $currentPage;
         $this->perPage = $perPage;
         $this->totalItems = $totalItems;
+        $this->pages = ceil($totalItems / $perPage);
 
         $offset = ($currentPage - 1) * $perPage;
 
         $this->next = ($offset + $perPage) < $totalItems ? ($currentPage + 1) : false;
-        $this->prev = ($currentPage > 1) ? ($currentPage - 1) : false;
+        $this->previous = ($currentPage > 1) ? ($currentPage - 1) : false;
     }
 
     public function current()
