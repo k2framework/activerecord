@@ -223,21 +223,28 @@ class Model implements \Serializable
     private static function setFetchMode(\PDOStatement $sts, $fetchMode)
     {
         switch ($fetchMode) {
-// Obtener arrays
+            // Obtener arrays
             case static::FETCH_ARRAY:
                 $sts->setFetchMode(PDO::FETCH_ASSOC);
                 break;
 
-// Obtener instancias de objetos simples
+            // Obtener instancias de objetos simples
             case static::FETCH_OBJ:
                 $sts->setFetchMode(PDO::FETCH_OBJ);
                 break;
 
-// Obtener instancias del mismo modelo
+            // Obtener instancias del mismo modelo
             case static::FETCH_MODEL:
-            default:
-// Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
+            case \PDO::FETCH_CLASS:
+            case null:
+                // Instancias de un nuevo modelo, por lo tanto libre de los atributos de la instancia actual
                 $sts->setFetchMode(PDO::FETCH_CLASS, get_called_class());
+                break;
+            default:
+                if(!$sts->setFetchMode($fetchMode)){
+                    throw new ActiveRecordException("no se reconoce el fetchMode \"$fetchMode\"");
+                }
+                
         }
     }
 
@@ -1022,9 +1029,9 @@ class Model implements \Serializable
         if (0 !== strpos($name, 'get')) {
             return;
         }
-        
+
         $name = lcfirst(substr($name, 3));
-        
+
         if (count($arguments)) {
             $arguments = current($arguments);
         } else {
