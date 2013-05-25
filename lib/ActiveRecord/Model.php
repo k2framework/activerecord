@@ -48,7 +48,7 @@ use ActiveRecord\Exception\ActiveRecordException;
  * la tabla de la base de datos. Cuando se modifican los atributos del
  * objeto, se actualiza la fila de la base de datos.
  */
-class Model
+class Model implements \Serializable
 {
     /**
      * Obtener datos cargados en objeto del Modelo
@@ -1077,13 +1077,14 @@ class Model
     /**
      * Método llamado al serializar un objeto ActiveRecord
      * 
-     * devuelve los atributos que serán serializados.
+     * serializa solo la data que representa los campos de la tabla.
      * 
      * @return string 
      */
-    public function __sleep()
+    public function serialize()
     {
-        return static::metadata()->getAttributesList();
+        $data = array_intersect_key(get_object_vars($this), static::metadata()->getAttributes());
+        return serialize($data);
     }
 
     /**
@@ -1091,9 +1092,9 @@ class Model
      * para inicializar dicho objeto de manera correcta.
      * @param string $serialized 
      */
-    public function __wakeup()
+    public function unserialize($serialized)
     {
-        $this->__construct();
+        $this->__construct(unserialize($serialized));
     }
 
     protected static function dispatchQueryEvent(PDOStatement $statement, $result)
