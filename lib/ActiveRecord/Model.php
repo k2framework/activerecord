@@ -241,10 +241,9 @@ class Model implements \Serializable
                 $sts->setFetchMode(PDO::FETCH_CLASS, get_called_class());
                 break;
             default:
-                if(!$sts->setFetchMode($fetchMode)){
+                if (!$sts->setFetchMode($fetchMode)) {
                     throw new ActiveRecordException("no se reconoce el fetchMode \"$fetchMode\"");
                 }
-                
         }
     }
 
@@ -392,31 +391,6 @@ class Model implements \Serializable
     }
 
     /**
-     * Crea condiciones en el DbQuery a partir de un array
-     * @param \ActiveRecord\Query\DbQuery $q
-     * @param array $conditions
-     */
-    protected static function createConditions(DbQuery $q, array $conditions = array())
-    {
-        $x = 0;
-        foreach ($conditions as $column => $value) {
-            if (is_array($value)) {
-                if (count($value)) {
-                    $cond = ':_' . join(",:_", array_keys($value));
-                    $q->where("$column IN ($cond)");
-                    foreach ($value as $key => $val) {
-                        $q->bindValue("_$key", (string) $val);
-                    }
-                }
-            } else {
-                $q->where("$column = :v$x")
-                        ->bindValue("v$x", $value);
-            }
-            ++$x;
-        }
-    }
-
-    /**
      * Busca por una serie de campos pasados como array
      * @param array $conditions
      * @param string $fetchMode
@@ -424,7 +398,7 @@ class Model implements \Serializable
      */
     public static function findBy(array $conditions = array(), $fetchMode = null)
     {
-        self::createConditions(static::createQuery(), $conditions);
+        static::createQuery()->where($conditions);
 
         return static::find($fetchMode);
     }
@@ -437,7 +411,7 @@ class Model implements \Serializable
      */
     public static function findAllBy(array $conditions = array(), $fetchMode = null)
     {
-        self::createConditions(static::createQuery(), $conditions);
+        static::createQuery()->where($conditions);
 
         return static::findAll($fetchMode);
     }
@@ -1017,7 +991,7 @@ class Model implements \Serializable
                     ->where("th.{$key} = :pk")
                     ->bindValue('pk', $this->{$pk1});
 
-            static::createConditions($query, $conditions);
+            $query->where($conditions);
 
             return $config['model']::findAll();
         }

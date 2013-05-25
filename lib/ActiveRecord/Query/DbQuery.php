@@ -101,7 +101,27 @@ class DbQuery
                 $cond = ' OR ';
             }
         }
-        return $cond . "($conditions)";
+
+        if (is_array($conditions)) {
+            $x = 0;
+            foreach ($conditions as $column => $value) {
+                if (is_array($value)) {
+                    if (count($value)) {
+                        $cond = ':_' . join(",:_", array_keys($value));
+                        $this->where("$column IN ($cond)");
+                        foreach ($value as $key => $val) {
+                            $this->bindValue("_$key", (string) $val);
+                        }
+                    }
+                } else {
+                    $this->where("$column = :v$x")
+                            ->bindValue("v$x", $value);
+                }
+                ++$x;
+            }
+        } else {
+            return $cond . "($conditions)";
+        }
     }
 
     /**
