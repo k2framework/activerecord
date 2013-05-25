@@ -68,7 +68,9 @@ class DbQuery
      */
     public function where($conditions)
     {
-        $this->sql['where'][] = $this->_where($conditions);
+        if ($where = $this->_where($conditions)) {
+            $this->sql['where'][] = $where;
+        }
         return $this;
     }
 
@@ -80,7 +82,9 @@ class DbQuery
      */
     public function whereOr($conditions)
     {
-        $this->sql['where'][] = $this->_where($conditions, FALSE);
+        if ($where = $this->_where($conditions, false)) {
+            $this->sql['where'][] = $where;
+        }
         return $this;
     }
 
@@ -88,14 +92,14 @@ class DbQuery
      * Método interno para crear la Clusula WHERE
      *
      * @param string $conditions
-     * @param bool   $type TRUE = AND; FALSE = OR
+     * @param bool   $type true = AND; false = OR
      * @return string clausula
      */
-    protected function _where($conditions, $type = TRUE)
+    protected function _where($conditions, $type = true)
     {
-        $cond = NULL;
+        $cond = null;
         if (isset($this->sql['where'])) {
-            if ($type === TRUE) {
+            if ($type === true) {
                 $cond = ' AND ';
             } else {
                 $cond = ' OR ';
@@ -161,7 +165,7 @@ class DbQuery
         if (isset($this->sql['bind'])) {
             return $this->sql['bind'];
         }
-        return NULL;
+        return null;
     }
 
     /**
@@ -306,7 +310,7 @@ class DbQuery
      * @param string $columns columnas
      * @return DbQuery
      */
-    public function select($columns = NULL)
+    public function select($columns = null)
     {
         $this->sql['command'] = 'select';
 
