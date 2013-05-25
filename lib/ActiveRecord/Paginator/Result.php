@@ -11,8 +11,8 @@ class Result implements \Iterator
     protected $perPage;
     protected $totalItems;
     protected $pages;
-    protected $next;
-    protected $previous;
+    protected $nextPage;
+    protected $previousPage;
 
     /**
      * Constructor
@@ -31,8 +31,8 @@ class Result implements \Iterator
 
         $offset = ($currentPage - 1) * $perPage;
 
-        $this->next = ($offset + $perPage) < $totalItems ? ($currentPage + 1) : false;
-        $this->previous = ($currentPage > 1) ? ($currentPage - 1) : false;
+        $this->previousPage = ($currentPage > 1) ? ($currentPage - 1) : false;
+        $this->nextPage = ($currentPage < $this->pages) ? ($currentPage + 1) : false;
     }
 
     public function current()
@@ -104,23 +104,25 @@ class Result implements \Iterator
     {
         return $this->pages;
     }
-
+    
     /**
      * devuelve el numero de la página siguiente si la hay, sino devuelve false
      * @return int|boolean
      */
-    public function getNext()
+    public function getNextPage()
     {
-        return $this->next;
+        return $this->nextPage;
     }
 
     /**
      * devuelve el numero de la página anterior si la hay, sino devuelve false
      * @return int|boolean
      */
-    public function getPrevious()
+    public function getPreviousPage()
     {
-        return $this->previous;
+        return $this->previousPage;
     }
+
+
 
 }
