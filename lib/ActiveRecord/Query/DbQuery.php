@@ -123,7 +123,7 @@ class DbQuery
                 }
                 ++$x;
             }
-        } else {
+        } elseif (is_string($conditions) and '' != trim($conditions)) {
             return $cond . "($conditions)";
         }
     }
