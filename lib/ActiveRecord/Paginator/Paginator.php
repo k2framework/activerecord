@@ -74,19 +74,22 @@ class Paginator
      * */
     public static function paginate(DbQuery $query, $page, $per_page, $fetchMode = Model::FETCH_MODEL)
     {
-        $arrayQuery = $query->getSqlArray() + array('columns' => '*');
+        $queryCount = clone $query;
 
-        $model = $query->getModelClass();
+        $model = $queryCount->order(null)->group(null)->offset(null)
+                ->limit(null)->select('*')->getModelClass();
 
-        $numItems = $model::count($query);
+        $numItems = $model::count($queryCount);
 
         $page = (int) $page;
         $per_page = (int) $per_page;
         $offset = ($page - 1) * $per_page;
 
-        $query->select($arrayQuery['columns'])->limit($per_page)->offset($offset);
+        $query->limit($per_page)->offset($offset);
+        
+        $qArray = $query->getSqlArray();
 
-        $items = $model::query($query, $fetchMode)->fetchAll();
+        $items = $model::query($query->select($qArray['columns']), $fetchMode)->fetchAll();
 
         return new Result($items, $numItems, $page, $per_page);
     }
