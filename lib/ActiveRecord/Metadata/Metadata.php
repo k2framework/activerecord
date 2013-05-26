@@ -46,7 +46,7 @@ class Metadata
      *
      * @var array
      */
-    private $_attributesList = array();
+    private $attributesList = array();
 
     /**
      * Clave primaria
