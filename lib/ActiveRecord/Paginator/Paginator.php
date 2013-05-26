@@ -77,7 +77,7 @@ class Paginator
         $queryCount = clone $query;
 
         $model = $queryCount->order(null)->group(null)->offset(null)
-                ->limit(null)->select('*')->getModelClass();
+                        ->limit(null)->select('*')->getModelClass();
 
         $numItems = $model::count($queryCount);
 
@@ -86,8 +86,8 @@ class Paginator
         $offset = ($page - 1) * $per_page;
 
         $query->limit($per_page)->offset($offset);
-        
-        $qArray = $query->getSqlArray();
+
+        $qArray = $query->getSqlArray() + array('columns' => '*');
 
         $items = $model::query($query->select($qArray['columns']), $fetchMode)->fetchAll();
 
