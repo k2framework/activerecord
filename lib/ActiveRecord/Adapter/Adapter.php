@@ -78,8 +78,12 @@ abstract class Adapter
     {
         $this->config = $config;
         if ($charset = $config->getCharset()) {
-            DbPool::factory($config)
-                    ->exec("SET CHARACTER SET $charset");
+            switch ($config->getType()) {
+                case 'mysql':
+                    DbPool::factory($config)
+                            ->exec("SET CHARACTER SET $charset");
+                    break;
+            }
         }
     }
 
