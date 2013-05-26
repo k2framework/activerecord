@@ -48,7 +48,11 @@ class DbPool
      *
      * @var array
      */
-    protected static $attributes = array();
+    protected static $attributes = array(
+        PDO::ATTR_STATEMENT_CLASS => array('ActiveRecord\\PDOStatement'),
+        PDO::PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT => false,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    );
 
     /**
      * Realiza una conexión directa al motor de base de datos
@@ -82,16 +86,7 @@ class DbPool
                     $dsn = "{$config->getType()}:host={$config->getHost()};dbname={$config->getDbName()}";
             }
 
-            if (!isset(self::$attributes[PDO::ATTR_STATEMENT_CLASS])) {
-                self::$attributes[PDO::ATTR_STATEMENT_CLASS] = array('ActiveRecord\\PDOStatement');
-            }
-
-            self::$connections[$config->getId()] = new PDO($dsn, $config->getUsername(), $config->getPassword(), self::$attributes);
-
-            self::$connections[$config->getId()]
-                    ->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            return self::$connections[$config->getId()];
+            return self::$connections[$config->getId()] = new PDO($dsn, $config->getUsername(), $config->getPassword(), self::$attributes);
         } catch (\PDOException $e) {
             throw $e;
         }

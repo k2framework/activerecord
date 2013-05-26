@@ -122,7 +122,7 @@ class DbQuery
                         $this->where("$column = :v$x")
                                 ->bindValue("v$x", $value);
                     } else {
-                        $this->where("$column is NULL");
+                        $this->where("$column IS NULL");
                     }
                 }
                 ++$x;
