@@ -485,6 +485,9 @@ class Model implements \Serializable
 // Itera en cada atributo
         foreach (static::metadata()->getAttributes() as $fieldName => $attr) {
 
+            if ($attr->PK) {
+                continue;
+            }
             if (property_exists($this, $fieldName)) {
                 if ($this->$fieldName === '') {
                     if (!$attr->default) {
