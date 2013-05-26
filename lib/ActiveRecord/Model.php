@@ -70,13 +70,6 @@ class Model implements \Serializable
     const FETCH_ARRAY = 'array';
 
     /**
-     * Conexion a base datos que se utilizara
-     *
-     * @var strings
-     */
-    protected static $connection = null;
-
-    /**
      * Constructor de la class
      *
      * @param array $data
@@ -103,7 +96,7 @@ class Model implements \Serializable
         static $metadata;
 
         if (!$metadata) {
-            $metadata = Adapter::factory(static::$connection)
+            $metadata = Adapter::factory(static::connection())
                     ->describe(static::table(), null); //el esquema por ahora null
         }
 
@@ -248,37 +241,63 @@ class Model implements \Serializable
     }
 
     /**
-     * Obtiene/establece el nombre de la tabla que el modelo está representando.
+     * Obtiene el nombre de la tabla que el modelo está representando.
      *
      * @return string
      */
-    public static function table($name = null)
+    public static function connection()
+    {
+        static $connection, $loaded = false;
+
+        if (!$loaded) {
+            $class = get_called_class();
+            $property = 'connection';
+            if (isset($class::$$property)) {
+                $connection = static::$connection;
+            }
+        }
+
+        return $connection;
+    }
+
+    /**
+     * Obtiene el nombre de la tabla que el modelo está representando.
+     *
+     * @return string
+     */
+    public static function table()
     {
         static $table;
 
-        if ($name) {
-            $table = $name;
-        } elseif (!$table) {
-            $table = self::createTableName(get_called_class());
+        if (!$table) {
+            $class = get_called_class();
+            $property = 'table';
+            if (isset($class::$$property)) {
+                $table = static::$table;
+            } else {
+                $table = self::createTableName($class);
+            }
         }
 
         return $table;
     }
 
     /**
-     * Asigna el esquema para la tabla
+     * Devuelve el esquema para la tabla
      *
-     * @param string $schema
      * @return ActiveRecord
      */
     public static function schema($name = null)
     {
-        static $schema;
+        static $schema, $loaded = false;
 
-        if ($name) {
-            $schema = $name;
-        } elseif (!$schema) {
-            $schema = null;
+        if (!$loaded) {
+            $loaded = true;
+            $class = get_called_class();
+            $property = 'schema';
+            if (isset($class::$$property)) {
+                $schema = static::$schema;
+            }
         }
 
         return $schema;
@@ -296,7 +315,7 @@ class Model implements \Serializable
     {
         $statement = null;
         try {
-            $statement = Adapter::factory(static::$connection)
+            $statement = Adapter::factory(static::connection())
                     ->prepare($sql);
 
             $this->setFetchMode($statement, $fetchMode);
@@ -329,7 +348,7 @@ class Model implements \Serializable
         $statement = null;
         try {
 // Obtiene una instancia del adaptador y prepara la consulta
-            $statement = Adapter::factory(static::$connection)
+            $statement = Adapter::factory(static::connection())
                     ->prepareDbQuery($dbQuery);
 
 // Indica el modo de obtener los datos en el ResultSet
@@ -521,7 +540,7 @@ class Model implements \Serializable
 // Convenio patron identidad en activerecord si PK es "id"
             if (is_string($pk = static::metadata()->getPK()) && (!isset($this->$pk) || $this->$pk == '')) {
 // Obtiene el ultimo id insertado y lo carga en el objeto
-                $this->$pk = Adapter::factory(static::$connection)
+                $this->$pk = Adapter::factory(static::connection())
                                 ->pdo()->lastInsertId();
             }
 
@@ -842,7 +861,7 @@ class Model implements \Serializable
      */
     public static function begin()
     {
-        return Adapter::factory(static::$connection)->pdo()->beginTransaction();
+        return Adapter::factory(static::connection())->pdo()->beginTransaction();
     }
 
     /**
@@ -852,7 +871,7 @@ class Model implements \Serializable
      */
     public static function rollback()
     {
-        return Adapter::factory(static::$connection)->pdo()->rollBack();
+        return Adapter::factory(static::connection())->pdo()->rollBack();
     }
 
     /**
@@ -862,7 +881,7 @@ class Model implements \Serializable
      */
     public static function commit()
     {
-        return Adapter::factory(static::$connection)->pdo()->commit();
+        return Adapter::factory(static::connection())->pdo()->commit();
     }
 
     /**
