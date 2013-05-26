@@ -67,7 +67,11 @@ class Pgsql extends Adapter
         try {
             $prepare = $this->prepare($sql);
             //ejecutando la consulta preparada
-            $results = $prepare->execute(array('database' => 'test', 'schema' => 'public', 'table' => 'prueba'));
+
+            $results = $prepare->execute(array(
+                'database' => $this->config->getDbName(),
+                'schema' => $schema ? : 'public',
+                'table' => $table));
             if ($results) {
                 $metadata = new Metadata();
                 while ($field = $prepare->fetchObject()) {

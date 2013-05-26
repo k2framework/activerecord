@@ -56,7 +56,7 @@ abstract class Adapter
     /**
      * Nombre de conexión
      *
-     * @var string
+     * @var Parameters
      */
     protected $config;
 
