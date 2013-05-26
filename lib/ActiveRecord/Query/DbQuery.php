@@ -118,8 +118,12 @@ class DbQuery
                         }
                     }
                 } else {
-                    $this->where("$column = :v$x")
-                            ->bindValue("v$x", $value);
+                    if (null !== $value) {
+                        $this->where("$column = :v$x")
+                                ->bindValue("v$x", $value);
+                    } else {
+                        $this->where("$column is NULL");
+                    }
                 }
                 ++$x;
             }
