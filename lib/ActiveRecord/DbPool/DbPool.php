@@ -50,7 +50,6 @@ class DbPool
      */
     protected static $attributes = array(
         PDO::ATTR_STATEMENT_CLASS => array('ActiveRecord\\PDOStatement'),
-        PDO::PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT => false,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     );
 
