@@ -1053,18 +1053,6 @@ class Model implements \Serializable
         return $dbQuery;
     }
 
-    public function getRelationalModel($fk, $inType = 'belongsTo')
-    {
-        if (!isset(self::$relations[get_called_class()][$inType])) {
-            return false;
-        }
-        if (in_array($fk, self::$relations[get_called_class()][$inType])) {
-            return array_search($fk, self::$relations[get_called_class()][$inType]);
-        }
-
-        return false;
-    }
-
     /**
      * Crea el nombre de la tabla a partir de la clase que hace de Modelo
      * @param string $className nombre de la clase.
