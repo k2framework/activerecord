@@ -467,7 +467,7 @@ class Model implements \Serializable
      * @param int $id
      * @return Model
      */
-    public static function findByID($id, $throw = true, $fetchMode = null)
+    public static function findById($id, $throw = true, $fetchMode = null)
     {
         return static::findByPK((int) $id, $throw, $fetchMode);
     }

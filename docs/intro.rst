@@ -137,7 +137,7 @@ ActiveRecord también nos permite consutlar registros existentes, actualizarlos 
 	<?php
 
 	//Consultar la persona con id=1
-	$persona = Personas::findByID(1);
+	$persona = Personas::findById(1);
 
 	//Cambiar su estado civil
 	$persona->estado_civil = 'Soltero';
